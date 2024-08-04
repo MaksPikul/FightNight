@@ -1,0 +1,6 @@
+@fightnight.Server_HostAddress = http://localhost:5220
+
+GET {{fightnight.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

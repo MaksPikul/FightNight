@@ -1,0 +1,23 @@
+{
+  "Version": 1,
+  "Hash": "VOxvrn1fK6DNvAB5E/jyr8UdYSyqvXFO0RvZvuDFWpI=",
+  "Source": "fightnight.Server",
+  "BasePath": "_content/fightnight.Server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "C:\\Users\\bloor\\source\\repos\\fightnight\\fightnight.client\\fightnight.client.esproj",
+      "Version": 2,
+      "Source": "fightnight.client",
+      "GetPublishAssetsTargets": "GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    }
+  ],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
