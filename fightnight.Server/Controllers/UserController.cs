@@ -3,7 +3,6 @@ using fightnight.Server.Dtos.User;
 using fightnight.Server.Interfaces;
 using fightnight.Server.Mappers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace fightnight.Server.Controllers
 {
