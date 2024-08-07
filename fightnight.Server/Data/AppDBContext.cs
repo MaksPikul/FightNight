@@ -14,10 +14,23 @@ namespace fightnight.Server.Data
             
         }
 
-        public DbSet<User> User { get; set; } 
+        public DbSet<Event> Event { get; set; } 
+        public DbSet<AppUserEvent> AppUserEvent { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<AppUserEvent>(x => x.HasKey(p => new { p.AppUserId, p.EventId }));
+            builder.Entity<AppUserEvent>()
+                .HasOne(u => u.AppUser)
+                .WithMany(u => u.AppUserEvents)
+                .HasForeignKey(p => p.AppUserId);
+
+            builder.Entity<AppUserEvent>()
+                .HasOne(u => u.Event)
+                .WithMany(u => u.AppUserEvents)
+                .HasForeignKey(p => p.EventId);
+
             List<IdentityRole> roles = new List<IdentityRole> {
                 new IdentityRole
                 {

@@ -12,8 +12,8 @@ using fightnight.Server.Data;
 namespace fightnight.Server.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20240804151632_seedrole")]
-    partial class seedrole
+    [Migration("20240806074431_MToMAdded")]
+    partial class MToMAdded
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,13 +54,13 @@ namespace fightnight.Server.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d9772a61-58f6-4cf8-a5ec-ccda8b018e2c",
+                            Id = "8538acd8-3c96-48a9-a220-e7f63adf7c1c",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "b2ee220f-009a-46b4-8cc4-e5afdd543fa3",
+                            Id = "84c2be24-ba86-4bd6-9396-8a3e7e5b8a6a",
                             Name = "user",
                             NormalizedName = "USER"
                         });
@@ -237,33 +237,72 @@ namespace fightnight.Server.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("fightnight.Server.models.User", b =>
+            modelBuilder.Entity("fightnight.Server.Models.AppUserEvent", b =>
                 {
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("EventId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("AppUserId", "EventId");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("AppUserEvent");
+                });
+
+            modelBuilder.Entity("fightnight.Server.models.Event", b =>
+                {
+                    b.Property<string>("id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("VenueAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("adminId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("dateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("desc")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<TimeSpan>("eventDur")
+                        .HasColumnType("time");
+
+                    b.Property<int>("numRounds")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
-
-                    b.Property<string>("email")
+                    b.Property<string>("organizer")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("name")
+                    b.Property<int>("roundDur")
+                        .HasColumnType("int");
+
+                    b.Property<int>("status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("password")
+                    b.Property<string>("type")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("pfp")
+                    b.Property<string>("venue")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id");
 
-                    b.ToTable("User");
+                    b.ToTable("Event");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -315,6 +354,35 @@ namespace fightnight.Server.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("fightnight.Server.Models.AppUserEvent", b =>
+                {
+                    b.HasOne("fightnight.Server.Models.AppUser", "AppUser")
+                        .WithMany("AppUserEvents")
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("fightnight.Server.models.Event", "Event")
+                        .WithMany("AppUserEvents")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("fightnight.Server.Models.AppUser", b =>
+                {
+                    b.Navigation("AppUserEvents");
+                });
+
+            modelBuilder.Entity("fightnight.Server.models.Event", b =>
+                {
+                    b.Navigation("AppUserEvents");
                 });
 #pragma warning restore 612, 618
         }

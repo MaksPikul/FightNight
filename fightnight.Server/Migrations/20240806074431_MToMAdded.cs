@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace fightnight.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class identity : Migration
+    public partial class MToMAdded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +50,29 @@ namespace fightnight.Server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Event",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    dateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    eventDur = table.Column<TimeSpan>(type: "time", nullable: false),
+                    venue = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VenueAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    desc = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    status = table.Column<int>(type: "int", nullable: false),
+                    organizer = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    adminId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    numRounds = table.Column<int>(type: "int", nullable: false),
+                    roundDur = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Event", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -156,6 +181,44 @@ namespace fightnight.Server.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "AppUserEvent",
+                columns: table => new
+                {
+                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    EventId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppUserEvent", x => new { x.AppUserId, x.EventId });
+                    table.ForeignKey(
+                        name: "FK_AppUserEvent_AspNetUsers_AppUserId",
+                        column: x => x.AppUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AppUserEvent_Event_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Event",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "84c2be24-ba86-4bd6-9396-8a3e7e5b8a6a", null, "user", "USER" },
+                    { "8538acd8-3c96-48a9-a220-e7f63adf7c1c", null, "admin", "ADMIN" }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppUserEvent_EventId",
+                table: "AppUserEvent",
+                column: "EventId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -200,6 +263,9 @@ namespace fightnight.Server.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AppUserEvent");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
             migrationBuilder.DropTable(
@@ -213,6 +279,9 @@ namespace fightnight.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Event");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
