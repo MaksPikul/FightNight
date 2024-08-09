@@ -50,6 +50,9 @@ namespace fightnight.Server.Controllers
                 if (createdUser.Succeeded) {
                     var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
                     if (roleResult.Succeeded){
+
+                        //send email
+
                         return Ok(
                             new NewUserDto
                             {
@@ -80,11 +83,12 @@ namespace fightnight.Server.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var user =  await _userManager.Users.FirstOrDefaultAsync(x => x.Email == loginDto.Email.ToLower());
-
             if (user == null) return Unauthorized("Email not found");
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+            if (!await _userManager.IsEmailConfirmedAsync(user)) 
+                return Unauthorized("Email has not been verified");
 
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
             if (!result.Succeeded) return Unauthorized("Invalid Credentials");
 
             return Ok(

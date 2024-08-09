@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("fightnight.Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1aac4ed0a740e994fe0753c80f52560e1d849d5d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+da8388bdb24344eab26389620a7e2aff7caaf20a")]
 [assembly: System.Reflection.AssemblyProductAttribute("fightnight.Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("fightnight.Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
