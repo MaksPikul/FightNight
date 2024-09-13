@@ -1,0 +1,13 @@
+.vs
+
+fightnight.Server/appsettings.json
+fightnight.Server/bin/Debug/net8.0
+fightnight.Server/obj/
+
+fightnight.client/obj/Debug
+fightnight.client/.env
+docker-compose.yml
+bin/Debug
+
+launchSettings.json
+

@@ -1,0 +1,64 @@
+name: dockercompose17001188363640048427
+services:
+  fightnight.db:
+    container_name: jolly_shamir
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: Canwegetmuchhigher1!
+    image: mcr.microsoft.com/mssql/server
+    networks:
+      fightnightapp: null
+    ports:
+      - mode: ingress
+        target: 1433
+        published: "1400"
+        protocol: tcp
+  fightnight.server:
+    build:
+      context: C:\Users\mmaks\fightnight
+      dockerfile: fightnight.Server/Dockerfile
+    depends_on:
+      fightnight.db:
+        condition: service_started
+        required: true
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ASPNETCORE_HTTPS_PORTS: "8081"
+      DB_HOST: fightnight.db
+      DB_NAME: FightNightDB
+      DB_SA_PASSWORD: Canwegetmuchhigher1!
+    image: fightnightserver
+    networks:
+      fightnightapp: null
+    ports:
+      - mode: ingress
+        target: 8080
+        published: "8000"
+        protocol: tcp
+      - mode: ingress
+        target: 8081
+        published: "8001"
+        protocol: tcp
+      - mode: ingress
+        target: 8080
+        protocol: tcp
+      - mode: ingress
+        target: 8081
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: C:\Users\mmaks\AppData\Roaming/Microsoft/UserSecrets
+        target: /home/app/.microsoft/usersecrets
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\mmaks\AppData\Roaming/ASP.NET/Https
+        target: /home/app/.aspnet/https
+        read_only: true
+        bind:
+          create_host_path: true
+networks:
+  fightnightapp:
+    name: dockercompose17001188363640048427_fightnightapp
