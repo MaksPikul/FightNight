@@ -1,10 +1,13 @@
 import { create } from "zustand"
+import { Message } from "../Models/Message";
 
-export type ModalType = "signOut" | "CreateEvent" | "ConfirmDeleteEvent" | "UploadBanner";
+export type ModalType = "signOut" | "CreateEvent" | "ConfirmDeleteEvent"
+    | "UploadBanner" | "ConfirmDeleteMessage";
 
 interface ModalData {
     eventTitle?: string
     eventId?: string
+    message?: Message
 }
 
 interface ModalStore {

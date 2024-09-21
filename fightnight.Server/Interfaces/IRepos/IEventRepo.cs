@@ -1,9 +1,8 @@
 ﻿using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
-using fightnight.Server.models;
-using fightnight.Server.Models;
+using fightnight.Server.Models.Tables;
 
-namespace fightnight.Server.Interfaces
+namespace fightnight.Server.Interfaces.IRepos
 {
     public interface IEventRepo
     {
@@ -11,7 +10,8 @@ namespace fightnight.Server.Interfaces
         Task<Event?> GetEventAsync(string id);
         Task<Event> CreateEventAsync(Event eventModel);
         Task<List<EventDto>> GetUserEvents(AppUser user);
-        Task<AppUserEvent> CreateAppUserEventAsync(AppUserEvent userEvent);
+        Task<Event> DeleteEvent(Event eventVar);
+        Task<Event> UpdateEvent(Event eventVar);
         EventRole GetUserEventRoleAsync(string userId, string eventId);
     }
 }

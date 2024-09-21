@@ -1,4 +1,4 @@
-﻿namespace fightnight.Server.Models
+﻿namespace fightnight.Server.Models.Types
 {
     public class S3Obj
     {

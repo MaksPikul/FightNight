@@ -1,5 +1,5 @@
-﻿using fightnight.Server.Interfaces;
-using fightnight.Server.Models;
+﻿using fightnight.Server.Interfaces.IServices;
+using fightnight.Server.Models.Tables;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

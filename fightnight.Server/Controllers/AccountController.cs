@@ -1,8 +1,9 @@
 ﻿using fightnight.Server.Data;
+using fightnight.Server.Dtos;
 using fightnight.Server.Dtos.Account;
 using fightnight.Server.Enums;
-using fightnight.Server.Interfaces;
-using fightnight.Server.Models;
+using fightnight.Server.Interfaces.IServices;
+using fightnight.Server.Models.Tables;
 using fightnight.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -131,7 +132,7 @@ namespace fightnight.Server.Controllers
         [HttpPatch("verify")]
         public async Task<IActionResult> VerifyEmail([FromBody] string token, string email)
         {
-            UserToken userToken = await _context.UserToken.FirstOrDefaultAsync(x=> x.token == token && x.userEmail == email && x.type.Equals(TokenType.verify));
+            UserToken userToken = await _context.UserToken.FirstOrDefaultAsync(x=> x.token == token && x.userEmail == email && x.tokenType.Equals(TokenType.verify));
             if (userToken == null)
             {
                 return BadRequest("Invalid Verification Token");
@@ -306,7 +307,7 @@ namespace fightnight.Server.Controllers
         [HttpPatch("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] PasswordResetVals prVals)
         {
-            UserToken userToken = await _context.UserToken.FirstOrDefaultAsync(x => x.token == prVals.token && x.userEmail == prVals.email && x.type.Equals(TokenType.changePassword));
+            UserToken userToken = await _context.UserToken.FirstOrDefaultAsync(x => x.token == prVals.token && x.userEmail == prVals.email && x.tokenType.Equals(TokenType.changePassword));
             if (userToken == null)
             {
                 return BadRequest("Invalid Verification Token");

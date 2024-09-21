@@ -1,6 +1,6 @@
 ﻿using fightnight.Server.Dtos.Account;
 
-namespace fightnight.Server.Interfaces
+namespace fightnight.Server.Interfaces.IServices
 {
     public interface ISessionService
     {

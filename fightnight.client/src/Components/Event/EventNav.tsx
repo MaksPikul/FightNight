@@ -36,7 +36,6 @@ export const EventNav = () => {
         return () => window.removeEventListener('resize', handleResize);
 
     }, []);
-    console.log(current)
 
     const navigations = [
         {

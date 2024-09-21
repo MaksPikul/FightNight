@@ -5,7 +5,7 @@ import { UserCard } from "./UserCard";
 import { UserEventProfile } from "../../Models/User";
 import { UserGroup } from "./UserGroup";
 
-export const EventSideNav = () => {
+export const EventMembers = () => {
     const users = [
         { id: 1, username: 'Alice', type: 'admin' },
         { id: 2, username: 'Bob', type: 'guest' },
@@ -29,7 +29,7 @@ export const EventSideNav = () => {
     
 
     return (
-        <nav className="px-3 py-2 space-y-2">
+        <nav className="">
             <UserGroup title="Admin" userList={groupedUsers.admin} />
             <Separator />
             <UserGroup title="Moderators" userList={groupedUsers.member} />

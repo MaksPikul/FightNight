@@ -21,8 +21,8 @@ export const UserGroup = ({
                 {/*title !== "Admin" && <Button variant="ghost" className=""> <Ellipsis /> </Button> */}
             </div>
 
-            {(userList.map((user: UserEventProfile) => {
-                return <UserCard user={user} />
+            {(userList.map((user: UserEventProfile, index) => {
+                return <UserCard keys={index.toString()} user={user} />
             }))}
         </div>
     )

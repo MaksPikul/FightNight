@@ -62,3 +62,8 @@ export const NewPasswordSchema = z.object({
     message: "Passwords don't match",
     path:["confimPassword"]
 })
+
+
+export const MessageSchema = z.object({
+    message: z.string()
+})

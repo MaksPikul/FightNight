@@ -1,19 +1,18 @@
-using Amazon.Extensions.NETCore.Setup;
-using Amazon.S3;
-using fightnight.Server.Data;
-using fightnight.Server.Interfaces;
-using fightnight.Server.Models;
 using fightnight.Server.repo;
 using fightnight.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Net;
 using System.Net.Mail;
+using Microsoft.AspNetCore.ResponseCompression;
+using fightnight.Server.Hubs;
+using fightnight.Server.Data;
+using fightnight.Server.Interfaces.IRepos;
+using fightnight.Server.Interfaces.IServices;
+using fightnight.Server.Repos;
+using fightnight.Server.Models.Tables;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,14 +131,22 @@ builder.Services
         Credentials = new NetworkCredential(emailSettings["EmailSettings:SmtpUsername"], emailSettings["EmailSettings:SmtpPassword"]) // Use app-specific password
     });
 
-
-
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "applciation/octet-stream" });
+});
 
 builder.Services.AddScoped<IEventRepo, EventRepo>();
+builder.Services.AddScoped<IMemberRepo, MemberRepo>();
+builder.Services.AddScoped<IMessageRepo, MessageRepo>();
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IGoogleTokenService, GoogleTokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -174,6 +181,7 @@ app.UseAuthorization();
 //responseCaching
 
 app.MapControllers();
+app.MapHub<ChatHub>("/chathub");
 
 app.MapFallbackToFile("/index.html");
 

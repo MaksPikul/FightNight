@@ -2,12 +2,12 @@
 using System;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
-using fightnight.Server.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.OpenApi.Any;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
+using fightnight.Server.Interfaces.IServices;
 
 namespace fightnight.Server.Services
 {

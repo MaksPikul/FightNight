@@ -1,6 +1,6 @@
 ﻿using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
-using fightnight.Server.models;
+using fightnight.Server.Models.Tables;
 
 namespace fightnight.Server.Mappers
 {

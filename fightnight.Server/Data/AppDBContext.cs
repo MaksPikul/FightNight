@@ -1,5 +1,4 @@
-﻿using fightnight.Server.models;
-using fightnight.Server.Models;
+﻿using fightnight.Server.Models.Tables;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +16,7 @@ namespace fightnight.Server.Data
 
         public DbSet<Event> Event { get; set; }
         public DbSet<UserToken> UserToken { get; set; }
+        public DbSet<Message> Message { get; set; }
         public DbSet<AppUserEvent> AppUserEvent { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {

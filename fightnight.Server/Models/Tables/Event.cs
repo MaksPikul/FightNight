@@ -1,7 +1,6 @@
 ﻿using fightnight.Server.Enums;
-using fightnight.Server.Models;
 
-namespace fightnight.Server.models
+namespace fightnight.Server.Models.Tables
 {
     public class Event
     {
@@ -11,10 +10,10 @@ namespace fightnight.Server.models
         public string title { get; set; } = string.Empty;
         public DateTime date { get; set; } = DateTime.Now;
         public TimeSpan eventDur { get; set; } = TimeSpan.Zero;
-        public string time { get; set; } = string.Empty;    
+        public string time { get; set; } = string.Empty;
         public string venue { get; set; } = string.Empty;
         public string venueAddress { get; set; } = string.Empty;
-        public string desc {get; set;} = string.Empty;
+        public string desc { get; set; } = string.Empty;
         public string type { get; set; } = string.Empty;
         public EventStatus status { get; set; } = EventStatus.Planning;
         public string organizer { get; set; } = string.Empty;
@@ -22,10 +21,11 @@ namespace fightnight.Server.models
         public int numMatches { get; set; } = 3;
         public int numRounds { get; set; } = 3;
         public int roundDur { get; set; } = 3;
+        //public DateTime createdAt { get; set; } = DateTime.Now;
+        //public DateTime updatedAt { get; set; } 
         //participant list
         //mod list
-        public string bannerUrl {  get; set; } = string.Empty;
-
+        public string bannerUrl { get; set; } = string.Empty;
         public List<AppUserEvent> AppUserEvents { get; set; } = new List<AppUserEvent>();
 
     }

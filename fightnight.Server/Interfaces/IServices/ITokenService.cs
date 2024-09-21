@@ -1,7 +1,7 @@
-﻿using fightnight.Server.Models;
+﻿using fightnight.Server.Models.Tables;
 using System.Security.Claims;
 
-namespace fightnight.Server.Interfaces
+namespace fightnight.Server.Interfaces.IServices
 {
     public interface ITokenService
     {

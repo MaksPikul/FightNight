@@ -1,8 +1,8 @@
 ﻿using Amazon.S3.Model;
 using fightnight.Server.Dtos.S3;
-using fightnight.Server.Models;
+using fightnight.Server.Models.Types;
 
-namespace fightnight.Server.Interfaces
+namespace fightnight.Server.Interfaces.IServices
 {
     public interface IStorageService
     {

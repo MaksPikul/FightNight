@@ -1,4 +1,4 @@
-﻿using fightnight.Server.Interfaces;
+﻿using fightnight.Server.Interfaces.IServices;
 using FluentEmail.Core;
 using Microsoft.AspNetCore.Mvc;
 

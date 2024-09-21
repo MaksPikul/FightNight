@@ -1,5 +1,5 @@
 ﻿using fightnight.Server.Dtos.Account;
-using fightnight.Server.Interfaces;
+using fightnight.Server.Interfaces.IServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Text.Json;
 

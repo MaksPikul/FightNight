@@ -3,8 +3,8 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using fightnight.Server.Dtos.S3;
-using fightnight.Server.Interfaces;
-using fightnight.Server.Models;
+using fightnight.Server.Interfaces.IServices;
+using fightnight.Server.Models.Types;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace fightnight.Server.Services

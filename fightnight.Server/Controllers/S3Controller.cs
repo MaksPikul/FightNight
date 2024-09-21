@@ -1,5 +1,5 @@
 ﻿using fightnight.Server.Data;
-using fightnight.Server.Interfaces;
+using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 

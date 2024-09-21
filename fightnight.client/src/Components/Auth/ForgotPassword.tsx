@@ -10,12 +10,13 @@ import { EnterEmailSchema } from "../../Schemas"
 import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { SendForgotPasswordEmail } from "../../Services/EmailService"
+import { AxiosError, AxiosResponse } from "axios"
 
 export const ForgotPassword = () => {
 
     const [error, setError] = useState<string | undefined>("");
     const [success, setSuccess] = useState<string | undefined>("");
-    const [loading,setLoading] = useState(false)
+    const [loading,setLoading] = useState<boolean>(false)
 
 
     const onSubmit = async (values: z.infer<typeof EnterEmailSchema>) => {
@@ -23,7 +24,7 @@ export const ForgotPassword = () => {
         setSuccess("")
 
         setLoading(true)
-        const response = await SendForgotPasswordEmail(values.email)
+        const response: AxiosResponse = await SendForgotPasswordEmail(values.email)
         setLoading(false)
 
         if (response.data) {

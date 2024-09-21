@@ -1,9 +1,9 @@
 ﻿using fightnight.Server.Data;
+using fightnight.Server.Dtos.Member;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
-using fightnight.Server.Interfaces;
-using fightnight.Server.models;
-using fightnight.Server.Models;
+using fightnight.Server.Interfaces.IRepos;
+using fightnight.Server.Models.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Data;
@@ -37,31 +37,42 @@ namespace fightnight.Server.repo
         public async Task<List<EventDto>> GetUserEvents(AppUser user)
         {
             return await _context.AppUserEvent.Where(u => u.AppUserId == user.Id)
-                .Select(eventV => 
+                .Select(eventV =>
                     new EventDto
                     {
-                    id = eventV.EventId,
-                    title = eventV.Event.title,
-                    date = eventV.Event.date,
-                    adminId = eventV.Event.adminId,
-                    role = eventV.Role,
-                    venueAddress = eventV.Event.venueAddress,
-                    time = eventV.Event.time,  
-                    status = eventV.Event.status,
+                        id = eventV.AppUser.Id,
+                        title = eventV.Event.title,
+                        date = eventV.Event.date,
+                        adminId = eventV.Event.adminId,
+                        role = eventV.Role,
+                        venueAddress = eventV.Event.venueAddress,
+                        time = eventV.Event.time,
+                        status = eventV.Event.status,
                     })
                 .ToListAsync();
         }
 
-        public async Task<AppUserEvent> CreateAppUserEventAsync(AppUserEvent userEvent)
+        public async Task<Event> DeleteEvent(Event eventVar)
         {
-            await _context.AppUserEvent.AddAsync(userEvent);
+            _context.Event.Remove(eventVar);
             await _context.SaveChangesAsync();
-            return userEvent;
-        }   
+            return eventVar;
+        }
+
+        public async Task<Event> UpdateEvent(Event eventVar)
+        {
+            _context.Event.Update(eventVar);
+            await _context.SaveChangesAsync();
+            return eventVar;
+        }
+
         public EventRole GetUserEventRoleAsync(string userId, string eventId)
         {
             return _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).Select(u => u.Role).FirstOrDefault();
         }
 
+
+
+        
     }
 } 

@@ -3,10 +3,10 @@ using fightnight.Server.Dtos.Event;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
 using fightnight.Server.Extensions;
-using fightnight.Server.Interfaces;
+using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Mappers;
-using fightnight.Server.models;
 using fightnight.Server.Models;
+using fightnight.Server.Models.Tables;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +19,16 @@ namespace fightnight.Server.Controllers
     {
         private readonly AppDBContext _context;
         private readonly IEventRepo _eventRepo;
+        private readonly IMemberRepo _memberRepo;
         private readonly UserManager<AppUser> _userManager;
-        public EventController(AppDBContext context, UserManager<AppUser> userManager, IEventRepo eventRepo)
+        public EventController(
+            AppDBContext context, 
+            UserManager<AppUser> userManager, 
+            IEventRepo eventRepo,
+            IMemberRepo memberRepo)
         {
             _eventRepo = eventRepo;
+            _memberRepo = memberRepo;
             _context = context;
             _userManager = userManager;
         }
@@ -99,7 +105,7 @@ namespace fightnight.Server.Controllers
                 Role = EventRole.Admin,
             };
 
-            await _eventRepo.CreateAppUserEventAsync(AppUserEvent);
+            await _memberRepo.AddMemberToEvent(AppUserEvent);
             if (AppUserEvent == null) return StatusCode(500, "Could not add AppUserEvent to DB");
 
             return Ok(eventModel.id);
@@ -128,13 +134,13 @@ namespace fightnight.Server.Controllers
                 eventVs.time = eventDto.time;
                 eventVs.date = eventDto.date;
                 eventVs.desc = eventDto.desc;
+                //eventVs.updatedAt = DateTime.Now;
                 eventVs.venueAddress = eventDto.venueAddress;
                 eventVs.numMatches = eventDto.numMatches;
                 eventVs.numRounds = eventDto.numRounds;
                 eventVs.roundDur = eventDto.roundDur;
 
-                _context.Event.Update(eventVs);
-                _context.SaveChanges();
+                await _eventRepo.UpdateEvent(eventVs);
                 return Ok(eventVs);
             }
             else
@@ -161,9 +167,8 @@ namespace fightnight.Server.Controllers
             else if (ueRole.Equals(EventRole.Admin))
             {
                 var eventVar = await _eventRepo.GetEventAsync(eventId);
-                _context.Event.Remove(eventVar);
-                _context.SaveChanges();
 
+                await _eventRepo.DeleteEvent(eventVar);
                 return Ok("Event Deleted");
             }
             else

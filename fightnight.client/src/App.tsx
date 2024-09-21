@@ -4,7 +4,6 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import { PrivateViews, PublicViews } from './Components/Auth/Views';
 import { LoginForm } from './Components/Auth/login-form';
 import { RegisterForm } from './Components/Auth/RegisterForm';
-import { SigninGoogle } from './Components/Auth/signin-google';
 import { HomePage } from './Components/Home/HomePage';
 import { EventPage } from './Components/Event/EventPage';
 import { EventTeamPage } from './Components/Event/EventTeamPage';
