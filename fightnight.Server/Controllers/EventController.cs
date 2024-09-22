@@ -66,7 +66,7 @@ namespace fightnight.Server.Controllers
             var userEventRole = _eventRepo.GetUserEventRoleAsync(appUser.Id, id);
             if (userEventRole == EventRole.Spectator)
             {
-                return Unauthorized("Denied Access to Event Page");
+                return Unauthorized(userEventRole);
             }
 
             var eventV = await _eventRepo.GetEventAsync(id);

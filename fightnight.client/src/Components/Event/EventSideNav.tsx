@@ -7,14 +7,14 @@ import { UserGroup } from "./UserGroup";
 
 export const EventMembers = () => {
     const users = [
-        { id: 1, username: 'Alice', type: 'admin' },
-        { id: 2, username: 'Bob', type: 'guest' },
-        { id: 3, username: 'Charlie', type: 'member' },
-        { id: 5, username: 'Eve', type: 'guest' },
-        { id: 5, username: 'Eve', type: 'guest' },
-        { id: 5, username: 'Eve', type: 'guest' },
-        { id: 5, username: 'Eve', type: 'guest' },
-        { id: 6, username: 'Frank', type: 'member' },
+        { id: 1, username: 'Alice', type: 'admin', role: 3 },
+        { id: 2, username: 'Bob', type: 'guest', role: 3 },
+        { id: 3, username: 'Charlie', type: 'member', role: 3 },
+        { id: 5, username: 'Eve', type: 'guest', role: 3 },
+        { id: 5, username: 'Eve', type: 'guest', role: 3 },
+        { id: 5, username: 'Eve', type: 'guest', role: 3 },
+        { id: 5, username: 'Eve', type: 'guest', role: 3 },
+        { id: 6, username: 'Frank', type: 'member',role:3 },
     ];
 
     const groupedUsers = users.reduce((acc, user) => {
@@ -25,7 +25,7 @@ export const EventMembers = () => {
         return acc;
     }, {});
 
-    
+    console.log(groupedUsers.guest)
     
 
     return (

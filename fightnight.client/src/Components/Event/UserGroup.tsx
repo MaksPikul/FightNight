@@ -6,13 +6,15 @@ import { UserCard } from "./UserCard"
 
 interface UserGroupProps {
     title: string,
-    userList: UserEventProfile[]
+    userList: any[]
 }
 
 export const UserGroup = ({
     title,
     userList
 }: UserGroupProps) => {
+
+    console.log(userList)
 
     return (
         <div>
@@ -21,8 +23,8 @@ export const UserGroup = ({
                 {/*title !== "Admin" && <Button variant="ghost" className=""> <Ellipsis /> </Button> */}
             </div>
 
-            {(userList.map((user: UserEventProfile, index) => {
-                return <UserCard keys={index.toString()} user={user} />
+            {(userList.map((user, index) => {
+                return <UserCard keys={index.toString()} userProfile={user} />
             }))}
         </div>
     )

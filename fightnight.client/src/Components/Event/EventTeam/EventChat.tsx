@@ -9,7 +9,13 @@ import { ChatNav } from "./ChatNav"
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 import { useEffect, useState } from "react"
 
-export const EventChat = () => {
+interface EventChatProps {
+    eventId: string
+}
+
+export const EventChat = ({
+    eventId
+}: EventChatProps) => {
 
     const [connection, setConnection] = useState<HubConnection>()
     const [messages, setMessages] = useState<Message[]>([]);
@@ -45,7 +51,7 @@ export const EventChat = () => {
                 {
                     userId: user.userId,
                     username: "maks",
-                    eventId: "849847a3-6342-4b37-b02f-720d5fc16d79"
+                    eventId: eventId
                 })
             })
         }
@@ -56,14 +62,11 @@ export const EventChat = () => {
         }
     }, [connection])
 
-    async function DeleteMessage(msgId: string) {
-        //take away from useState()
-        //await connection.invoke("DeleteMsgReq", msgId);
-    }
-
+    
+    /*
     async function SendMessage(msg: string) {
         if (connection != null) {
-            const newMsg: Message = {
+            const newMsg = {
                 eventId: "849847a3-6342-4b37-b02f-720d5fc16d79",//event.id,
                 userId: user.userId,
                 username: "maks",//user.username,
@@ -79,6 +82,7 @@ export const EventChat = () => {
             await connection.invoke("SendMsgReq", newMsg);
         }
     }
+    */
 
     return (
         <Card
@@ -86,7 +90,7 @@ export const EventChat = () => {
             
             <ChatNav />
             <ChatMessages messages={messages} />
-            <ChatInput SendMessage={SendMessage} />
+            <ChatInput eventId={eventId} />
         </Card>
     )
 }

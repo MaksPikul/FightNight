@@ -40,7 +40,7 @@ namespace fightnight.Server.repo
                 .Select(eventV =>
                     new EventDto
                     {
-                        id = eventV.AppUser.Id,
+                        id = eventV.Event.id,
                         title = eventV.Event.title,
                         date = eventV.Event.date,
                         adminId = eventV.Event.adminId,

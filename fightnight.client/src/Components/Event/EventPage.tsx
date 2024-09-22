@@ -45,7 +45,6 @@ export const EventPage = () => {
     const [event, setEvent] = useState<Event>();
     const [mounted, setMounted] = useState(false);
     const navigate = useNavigate();
-    const [file, setFile] = useState()
 
     
     const { eventId } = useParams();
@@ -57,7 +56,7 @@ export const EventPage = () => {
     })
 
     useEffect(() => {
-        console.log(event)
+        console.log(eventId)
         GetEventAndUsers(eventId)
             .then(res => {
                 if (res.data) {
@@ -72,7 +71,8 @@ export const EventPage = () => {
                     });
                 }
                 else if (res.response) {
-                    navigate("/home")
+                    console.log(res.response)
+                    //navigate("/home")
                 }
             }
             )

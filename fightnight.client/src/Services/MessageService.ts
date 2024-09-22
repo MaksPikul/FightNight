@@ -3,14 +3,15 @@ import { Message } from "../Models/Message"
 const api = "https://localhost:7161/api/"
 
 export const AddMessageApi = async (
-    msg: Message
+    msg: string,
+    eventId: string
 ) => {
     fetch(api + "message",
         {
-            body: JSON.stringify({ msg }),
+            body: JSON.stringify({ msg, eventId }),
             method: "post",
             credentials: "include"
-        }).then((res) => res.json())
+        }).then((res) => console.log(res))
 }
 
 export const DeleteMessageApi = async (

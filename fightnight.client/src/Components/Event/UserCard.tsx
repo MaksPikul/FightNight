@@ -10,7 +10,7 @@ import { useAuth } from "../../Context/UseAuth"
 import { EventRole } from "../../Models/Event"
 
 interface UserCardProps {
-    userProfile: UserEventProfile,
+    userProfile: any,
     keys: string
 }
 
@@ -18,11 +18,12 @@ export const UserCard = ({
     userProfile,
     keys
 }: UserCardProps) => {
-
+    console.log(userProfile)
     const { user } = useAuth()
-
+    
     const isAdmin = userProfile.role === EventRole.Admin
     const ownProfile = userProfile.userId === user?.userId;
+    
 
     return (
         <ContextMenu>

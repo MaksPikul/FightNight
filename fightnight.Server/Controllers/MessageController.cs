@@ -12,7 +12,7 @@ namespace fightnight.Server.Controllers
         [Authorize]
         public async Task<IActionResult> AddMessage()
         {
-            return BadRequest("Not yet");
+            
         }
 
         [HttpGet]

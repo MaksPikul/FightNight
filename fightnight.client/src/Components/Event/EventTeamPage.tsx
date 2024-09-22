@@ -1,15 +1,17 @@
 
 
+import { useParams } from "react-router-dom"
 import { EventHeader } from "./EventHeader"
 import { EventMembers } from "./EventSideNav"
-import { EventChat } from "./NewFolder/EventChat"
-import { EventTeamOptions } from "./NewFolder/EventTeamOptions"
+import { EventChat } from "./EventTeam/EventChat"
+import { EventTeamOptions } from "./EventTeam/EventTeamOptions"
 
 
 export const EventTeamPage = () => {
 
     
 
+    const { eventId } = useParams();
     
 
     return (
@@ -23,7 +25,7 @@ export const EventTeamPage = () => {
                     <EventTeamOptions />
                     <EventMembers />
                 </nav>
-                <EventChat />
+                <EventChat eventId={eventId} />
             </div>
         </div>
     )

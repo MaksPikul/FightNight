@@ -38,12 +38,12 @@ namespace fightnight.Server.Hubs
 
         public Task DeleteMsgReq()
         {
-
+            return null;
         }
 
         public Task DisconnectReq()
         {
-
+            return null;
         }
     }
 }

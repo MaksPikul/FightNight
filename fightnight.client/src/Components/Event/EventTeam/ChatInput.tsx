@@ -8,15 +8,17 @@ import { Paperclip, Plus } from "lucide-react"
 import { Button } from "../../ui/button"
 import { HubConnection } from "@microsoft/signalr"
 import { Message } from "../../../Models/Message"
+import { useMessage } from "../../../Context/UseMessage"
 
 
 interface ChatInputProps {
-    SendMessage: (msg: string) => Promise<void>
+    eventId: string
 }
 
 export const ChatInput = ({
-    SendMessage
+    eventId
 }:ChatInputProps) => {
+    const { SendMessage } = useMessage()
     
     const form = useForm<z.infer<typeof MessageSchema>>({
         resolver: zodResolver(MessageSchema),
@@ -30,7 +32,7 @@ export const ChatInput = ({
         if (!value.message.trim()) {
             return; 
         }
-        SendMessage(value.message);
+        SendMessage(value.message, eventId);
         form.reset()
     }
 

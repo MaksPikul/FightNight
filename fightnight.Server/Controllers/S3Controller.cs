@@ -1,6 +1,6 @@
 ﻿using fightnight.Server.Data;
 using fightnight.Server.Interfaces.IServices;
-using fightnight.Server.Models;
+using fightnight.Server.Models.Types;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fightnight.Server.Controllers
