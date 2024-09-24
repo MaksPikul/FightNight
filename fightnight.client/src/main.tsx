@@ -9,19 +9,29 @@ import { ModalProvider } from './Context/UseModal';
 import { TooltipProvider } from './Components/ui/tooltip';
 import { Toaster } from './Components/ui/toaster.tsx'
 import { MessageProvider } from './Context/UseMessage.tsx';
+import {
+    QueryClient,
+    QueryClientProvider
+} from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
+const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-        <BrowserRouter >
+<StrictMode>
+    <BrowserRouter >
+        <QueryClientProvider client={queryClient}>
             <UserProvider>
                 <MessageProvider>
                     <TooltipProvider>
                         <ModalProvider />
                         <App />
                         <Toaster />
-                        </TooltipProvider>
+                    </TooltipProvider>
                 </MessageProvider>
             </UserProvider >
-        </BrowserRouter>
-  </StrictMode>,
+            <ReactQueryDevtools />
+        </QueryClientProvider>
+    </BrowserRouter>
+</StrictMode>
 )

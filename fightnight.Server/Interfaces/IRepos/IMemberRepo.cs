@@ -11,5 +11,7 @@ namespace fightnight.Server.Interfaces.IRepos
         Task<AppUserEvent> RemoveMemberFromEvent(AppUserEvent aue);
 
         Task<List<ReturnMemberDto>> GetEventMembers(string eventId);
+
+        Task<AppUserEvent> CheckIfMember(string eventId, string userId);
     }
 }

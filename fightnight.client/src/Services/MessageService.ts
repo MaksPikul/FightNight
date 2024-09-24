@@ -1,14 +1,15 @@
-import { Message } from "../Models/Message"
-
 const api = "https://localhost:7161/api/"
 
 export const AddMessageApi = async (
     msg: string,
-    eventId: string
+    eventId: string,
+    userId: string,
+    username: string,
+    userPicture: string
 ) => {
     fetch(api + "message",
         {
-            body: JSON.stringify({ msg, eventId }),
+            body: JSON.stringify({ msg, eventId, userId, username, userPicture }),
             method: "post",
             credentials: "include"
         }).then((res) => console.log(res))
@@ -31,21 +32,23 @@ export const UpdateMessageApi = async (
     eventId: string,
     newMsg: string
 ) => {
-    fetch(api + "message",
+    const res = await fetch(api + "message",
         {
             body: JSON.stringify({ msgId, eventId, newMsg }),
             method: "patch",
             credentials: "include"
-        }).then((res) => res.json())
+        })
+    return res
 }
 
-export const GetEventMessages = async (
+export const GetEventMessagesApi = async (
     eventId: string,
 ) => {
-    fetch(api + "message",
+    const res = await fetch(api + `message/${eventId}`,
         {
-            body: JSON.stringify({ eventId }),
+            //body: JSON.stringify({ eventId }),
             method: "get",
             credentials: "include"
-        }).then((res) => res.json())
+        })
+    return res
 }

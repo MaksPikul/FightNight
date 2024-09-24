@@ -12,8 +12,6 @@ import { VerifyEmail } from './Components/Auth/VerifyEmail';
 import { ResetPassword } from './Components/Auth/ResetPassword';
 import { ForgotPassword } from './Components/Auth/ForgotPassword';
 
-
-
 function App() {
 
     const { isLoggedIn } = useAuth();

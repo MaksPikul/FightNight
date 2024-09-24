@@ -25,12 +25,6 @@ namespace fightnight.Server.Hubs
 
         public Task SendMsgReq(Message newMsg)
         {
-            //accept connection or event Id
-            // add message to corresponding event 
-            // send message to corresponding event
-
-            //if msg empty, do return null
-
             return Clients
                 .Group(newMsg.eventId)
                 .SendAsync("SendMsgRes", newMsg);

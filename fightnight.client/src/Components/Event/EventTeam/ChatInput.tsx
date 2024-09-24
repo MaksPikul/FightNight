@@ -9,16 +9,21 @@ import { Button } from "../../ui/button"
 import { HubConnection } from "@microsoft/signalr"
 import { Message } from "../../../Models/Message"
 import { useMessage } from "../../../Context/UseMessage"
+import { useAuth } from "../../../Context/UseAuth"
+import { UseMutateFunction, useMutation } from "@tanstack/react-query"
+import { AddMessageApi } from "../../../Services/MessageService"
 
 
 interface ChatInputProps {
     eventId: string
+    mutate: any
 }
 
 export const ChatInput = ({
-    eventId
+    eventId,
+    mutate
 }:ChatInputProps) => {
-    const { SendMessage } = useMessage()
+    const { user } = useAuth()
     
     const form = useForm<z.infer<typeof MessageSchema>>({
         resolver: zodResolver(MessageSchema),
@@ -27,17 +32,15 @@ export const ChatInput = ({
             message:""
         }
     })
+
     const onSubmit = async (value: z.infer<typeof MessageSchema>) => {
 
         if (!value.message.trim()) {
             return; 
         }
-        SendMessage(value.message, eventId);
+        mutate(value.message);
         form.reset()
     }
-
-
-
 
 
     return (

@@ -9,6 +9,7 @@ namespace fightnight.Server.Interfaces.IRepos
         Task<Message> DeleteMessage(Message msg); //Message msg);
         List<Message> GetMessages(string eventId); //+, string userId); or , string groupId)
         Task<Message> UpdateMessage(Message msg);
-        
+
+
     }
 }

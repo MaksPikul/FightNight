@@ -43,5 +43,10 @@ namespace fightnight.Server.Repos
             await _context.SaveChangesAsync();
             return aue;
         }
+
+        public async Task<AppUserEvent> CheckIfMember(string eventId, string userId)
+        {
+            return await _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).FirstAsync();
+        }
     }
 }

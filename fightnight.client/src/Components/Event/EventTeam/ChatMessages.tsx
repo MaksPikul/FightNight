@@ -3,11 +3,13 @@ import { ScrollArea } from "../../ui/scroll-area"
 import { MessageBox } from "./MessageBox"
 
 interface ChatMessagesProps {
-    messages: Message[]
+    messages: Message[],
+    addMsgMutation: any
 }
 
 export const ChatMessages = ({
-    messages
+    messages,
+    addMsgMutation
 }:ChatMessagesProps) => {
 
     return (
@@ -19,6 +21,8 @@ export const ChatMessages = ({
                 </div>
                 )
             })}
+            {addMsgMutation.isPending && <MessageBox msg={addMsgMutation.variables} />}
+            {addMsgMutation.isError && <button onClick={() => addMsgMutation.mutate(addMsgMutation.variables)}>Retry</button> }
         </ScrollArea>
     )
 }

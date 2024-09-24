@@ -7,15 +7,14 @@ const api = "https://localhost:7161/api/"
 export const GetUserEvents = async (
     userId : string
 ) => {
-    try {
-        const data = await axios.get(api + `event/user/${userId}`,{
-            withCredentials: true
-        });
-        return data
-    }
-    catch (err) {
-        return err
-    }
+    
+    console.log(userId)
+    console.log("i just ran")
+    const res = await fetch(api + `event/user/${userId}`, {
+        method: "get",
+        credentials: "include"
+    })
+    return res.json()
 }
 
 // no need to send userId, user found in backend with cookie
@@ -35,38 +34,38 @@ export const CreateEventApi = async (title: string, date: Date) => {
 }
 
 export const GetEventAndUsers = async (eventId: string) => {
-    try {
-        const data = await axios<Event>(api + `event/${eventId}`, {
+    
+    const res = await fetch(api + `event/${eventId}`,
+        {
             method: "get",
-            withCredentials: true
+            credentials: "include"
         })
-        console.log(data)
-        return data
-    }
-    catch (err) {
-        return err
-    }
+        
+    return res.json()
+
 }
 
 export const UpdateEvent = async (
     eventId: string,
     values: z.infer<typeof EventSchema>
 ) => {
-    try {
-        const data = await axios.patch(api + `event`, {id:eventId, ...values}, {
-            withCredentials: true
+    //UPDATE KEY ['Event', eventId]
+    const res = await fetch(api + `event`,
+        {
+            body: JSON.stringify({ id: eventId, ...values }),
+            headers: { 'Content-Type': 'application/json' },
+            method: "patch",
+            credentials: "include"
         })
-        console.log(data)
-        return data
-    }
-    catch (err) {
-        console.log("err")
-        return err
-    }
+    return await res.json()
 }
+
 export const DeleteEvent = async (
     eventId: string
 ) => {
+
+    //Delete from Key ['Event', eventId]
+
     try {
         const data = await axios.delete(api + `event/` + eventId, {
             withCredentials: true

@@ -15,37 +15,45 @@ import { Event } from "../../Models/Event"
 import { useEffect, useState } from "react"
 import { GetUserEvents } from "../../Services/EventsService"
 import { useAuth } from "../../Context/UseAuth"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+
+
 
 
 export const EventsBox = () => {
 
     //"sort / filter / search / completed"
-
+    const queryClient = useQueryClient();
 
     const { user } = useAuth();
-    const [events, setEvents] = useState<Event[]>([]);
-    const [mounted, setMounted] = useState(false);
+    //const [events, setEvents] = useState<Event[]>([]);
 
     //const { getUserEvents } = useEvent();
 
-    useEffect(() => {
-        GetUserEvents(user?.userId)
-            .catch(
-            //Toast Error
-            )
-            .then(res => {
-                setEvents(res?.data)
-            })
-        setMounted(true)
-    }, [])
-    console.log(events)
-    return(
+    const {
+        isPending,
+        error,
+        data: events,
+        isFetching
+    } = useQuery({
+        queryFn: () => GetUserEvents(user?.userId),
+            queryKey: ['userEvents'],
+        });
+
+    if (isPending) return "loading..."
+
+    if (error) return error
+
+    //const x = queryClient.getQueryData(['userEvents', user?.userId]);
+    //console.log(x[0])
+
+    if (events) return(
     <Card
     className="p-5 w-[500px] ">
             <Carousel>
                 
                     <CarouselContent>
-                    {events.length !== 0 && mounted ?
+                    {events.length !== 0 ?
                     <>
                         {events.map((event, index) => (
                             <CarouselItem key={index}>

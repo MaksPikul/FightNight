@@ -10,6 +10,5 @@
         public string message { get; set; } = string.Empty;
         public DateTime timeStamp { get; set; } = DateTime.Now;
         public bool IsEdited { get; set; } = false;
-        public bool IsLoading { get; set; } = false;
     }
 }

@@ -141,7 +141,7 @@ namespace fightnight.Server.Controllers
                 eventVs.roundDur = eventDto.roundDur;
 
                 await _eventRepo.UpdateEvent(eventVs);
-                return Ok(eventVs);
+                return Ok(eventVs.ToEventDto(ueRole));
             }
             else
             {
