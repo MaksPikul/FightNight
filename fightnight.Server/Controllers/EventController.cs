@@ -34,24 +34,16 @@ namespace fightnight.Server.Controllers
         }
 
         // gets all created events, cant imagine needing this
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var events = await _eventRepo.GetAllAsync();
-
-            var eventsDto = events.Select(s => s);
-
-            return Ok(events);
-        }
+        
 
         // Gets Events related to the user an
-        [HttpGet("user/{id}")]
+        [HttpGet("user")]
         [Authorize]
-        public async Task<IActionResult> GetEventsByUserId([FromRoute] string id)
+        public async Task<IActionResult> GetEventsByUserId()
         {
-            //var email = User.GetEmail();
-            //FindByEmailAsync(email);
-            var appUser = await _userManager.FindByIdAsync(id);
+            var email = User.GetEmail();
+            var appUser = await _userManager.FindByEmailAsync(email);
+
             var userEvents = await _eventRepo.GetUserEvents(appUser);
             return Ok(userEvents);
         }
@@ -63,7 +55,7 @@ namespace fightnight.Server.Controllers
         {
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
-            var userEventRole = _eventRepo.GetUserEventRoleAsync(appUser.Id, id);
+            var userEventRole = _eventRepo.GetUserEventRole(appUser.Id, id);
             if (userEventRole == EventRole.Spectator)
             {
                 return Unauthorized(userEventRole);
@@ -105,10 +97,12 @@ namespace fightnight.Server.Controllers
                 Role = EventRole.Admin,
             };
 
-            await _memberRepo.AddMemberToEvent(AppUserEvent);
+            await _memberRepo.AddMemberToEventAsync(AppUserEvent);
+            
             if (AppUserEvent == null) return StatusCode(500, "Could not add AppUserEvent to DB");
 
             return Ok(eventModel.id);
+            
         }
 
         [HttpPatch]
@@ -119,7 +113,7 @@ namespace fightnight.Server.Controllers
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
 
-            var ueRole = _eventRepo.GetUserEventRoleAsync(appUser.Id, eventDto.id);
+            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, eventDto.id);
 
             if (ueRole == null)
             {
@@ -157,7 +151,7 @@ namespace fightnight.Server.Controllers
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
 
-            var ueRole = _eventRepo.GetUserEventRoleAsync(appUser.Id, eventId);
+            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, eventId);
             
 
             if (ueRole == null)

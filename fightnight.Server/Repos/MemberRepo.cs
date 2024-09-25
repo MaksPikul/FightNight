@@ -15,14 +15,14 @@ namespace fightnight.Server.Repos
         {
             _context = context;
         }
-        public async Task<AppUserEvent> AddMemberToEvent(AppUserEvent userEvent)
+        public async Task<AppUserEvent> AddMemberToEventAsync(AppUserEvent userEvent)
         {
             await _context.AppUserEvent.AddAsync(userEvent);
             await _context.SaveChangesAsync();
             return userEvent;
         }
 
-        public async Task<List<ReturnMemberDto>> GetEventMembers(string eventId)
+        public async Task<List<ReturnMemberDto>> GetEventMembersAsync(string eventId)
         {
             return await _context.AppUserEvent.Where(u => u.EventId == eventId )
                 .Select(eventV =>
@@ -37,16 +37,23 @@ namespace fightnight.Server.Repos
                 .ToListAsync();
         }
 
-        public async Task<AppUserEvent> RemoveMemberFromEvent(AppUserEvent aue)
+        public async Task<AppUserEvent> GetMemberAsync(string userId, string eventId)
+        {
+            return await _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId ==userId).FirstOrDefaultAsync();
+        }
+
+        public async Task<AppUserEvent> RemoveMemberFromEventAsync(AppUserEvent aue)
         {
             _context.AppUserEvent.Remove(aue);
             await _context.SaveChangesAsync();
             return aue;
         }
 
-        public async Task<AppUserEvent> CheckIfMember(string eventId, string userId)
+        public async Task<Boolean> CheckIfMemberAsync(string userId, string eventId)
         {
-            return await _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).FirstAsync();
+            var member = await _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).FirstOrDefaultAsync();
+            return member != null;
         }
+        
     }
 }

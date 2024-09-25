@@ -27,6 +27,7 @@ namespace fightnight.Server.Models.Tables
         //mod list
         public string bannerUrl { get; set; } = string.Empty;
         public List<AppUserEvent> AppUserEvents { get; set; } = new List<AppUserEvent>();
+        public List<Message> Messages { get; set; } = new List<Message>();
 
     }
 

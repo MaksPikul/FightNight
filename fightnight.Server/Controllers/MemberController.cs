@@ -1,4 +1,5 @@
 ﻿using fightnight.Server.Data;
+using fightnight.Server.Dtos.Member;
 using fightnight.Server.Dtos.NewFolder;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
@@ -33,13 +34,15 @@ namespace fightnight.Server.Controllers
             _context = context;
         }
 
+        
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> AddMemberToEvent([FromBody] NewMemberDto newMemberDto)
         {
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
-            var ueRole = _eventRepo.GetUserEventRoleAsync(appUser.Id, newMemberDto.eventId);
+            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, newMemberDto.eventId);
 
             if (!ueRole.Equals(EventRole.Admin))
             {
@@ -70,7 +73,7 @@ namespace fightnight.Server.Controllers
                 Role = newMemberDto.newRole,
             };
 
-            var result = await _memberRepo.AddMemberToEvent(AppUserEvent);
+            var result = await _memberRepo.AddMemberToEventAsync(AppUserEvent);
             if (AppUserEvent == null) return StatusCode(500, "Could not add AppUserEvent to DB");
 
             return Ok("");
@@ -78,16 +81,33 @@ namespace fightnight.Server.Controllers
 
         [HttpDelete]
         [Authorize]
-        public async Task<IActionResult> RemoveMemberFromEvent()
+        public async Task<IActionResult> RemoveMemberFromEvent([FromBody] RemoveMemberBody mbrBody)
         {
-            return BadRequest("Not implemented");
+            var email = User.GetEmail();
+            var appUser = await _userManager.FindByEmailAsync(email);
+
+            var role = _eventRepo.GetUserEventRole(appUser.Id, mbrBody.eventId);
+            if (!role.Equals(EventRole.Admin)) return Unauthorized("Unauthorized, you do not have permissions to run action");
+
+            var member = await _memberRepo.GetMemberAsync(mbrBody.userId, mbrBody.eventId);
+            if (member == null) return BadRequest("Member or Event does not exist");
+
+            await _memberRepo.RemoveMemberFromEventAsync(member);
+            return Ok(member.AppUser.UserName + " Has been removed from event");
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetEventMembers()
+        public async Task<IActionResult> GetEventMembers([FromBody] string eventId)
         {
-            return BadRequest("Not implemented");
+            var email = User.GetEmail();
+            var appUser = await _userManager.FindByEmailAsync(email);
+
+            var result = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventId);
+            if (result) return Unauthorized("Unauthorized, not a member of event.");
+
+            var members = await _memberRepo.GetEventMembersAsync(eventId);
+            return Ok(members);
         }
 
     }

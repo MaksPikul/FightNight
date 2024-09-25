@@ -33,6 +33,17 @@ namespace fightnight.Server.Data
                 .WithMany(u => u. AppUserEvents)
                 .HasForeignKey(p => p.EventId);
 
+            builder.Entity<Message>(x => x.HasKey(p => new { p.id }));
+            builder.Entity<Message>()
+                .HasOne(u => u.AppUser)
+                .WithMany(u => u.Messages)
+                .HasForeignKey(p => p.userId);
+
+            builder.Entity<Message>()
+                .HasOne(u => u.Event)
+                .WithMany(u => u.Messages)
+                .HasForeignKey(p => p.eventId);
+
             List<IdentityRole> roles = new List<IdentityRole> {
                 new IdentityRole
                 {

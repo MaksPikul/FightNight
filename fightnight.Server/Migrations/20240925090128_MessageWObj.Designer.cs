@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using fightnight.Server.Data;
 
@@ -11,9 +12,11 @@ using fightnight.Server.Data;
 namespace fightnight.Server.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240925090128_MessageWObj")]
+    partial class MessageWObj
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,13 +54,13 @@ namespace fightnight.Server.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "f4edc403-be56-4ab8-b17e-8dc9de5e4bd5",
+                            Id = "6b170f49-03ca-4e6c-b09b-85494d20111f",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "88869cb5-6278-4773-887a-e865e9c07380",
+                            Id = "2f34a52b-62fa-468d-bbc3-7fd3e23d4e9a",
                             Name = "user",
                             NormalizedName = "USER"
                         });
@@ -318,15 +321,17 @@ namespace fightnight.Server.Migrations
 
             modelBuilder.Entity("fightnight.Server.Models.Tables.Message", b =>
                 {
-                    b.Property<string>("id")
+                    b.Property<string>("userId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("eventId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsEdited")
                         .HasColumnType("bit");
 
-                    b.Property<string>("eventId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<string>("id")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("message")
                         .IsRequired()
@@ -335,19 +340,13 @@ namespace fightnight.Server.Migrations
                     b.Property<DateTime>("timeStamp")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("userId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("id");
+                    b.HasKey("userId", "eventId");
 
                     b.HasIndex("eventId");
-
-                    b.HasIndex("userId");
 
                     b.ToTable("Message");
                 });

@@ -12,6 +12,6 @@ namespace fightnight.Server.Interfaces.IRepos
         Task<List<EventDto>> GetUserEvents(AppUser user);
         Task<Event> DeleteEvent(Event eventVar);
         Task<Event> UpdateEvent(Event eventVar);
-        EventRole GetUserEventRoleAsync(string userId, string eventId);
+        EventRole GetUserEventRole(string userId, string eventId);
     }
 }

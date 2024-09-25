@@ -6,12 +6,13 @@ namespace fightnight.Server.Interfaces.IRepos
 {
     public interface IMemberRepo
     {
-        Task<AppUserEvent> AddMemberToEvent(AppUserEvent userEvent);
+        Task<AppUserEvent> AddMemberToEventAsync(AppUserEvent userEvent);
 
-        Task<AppUserEvent> RemoveMemberFromEvent(AppUserEvent aue);
+        Task<AppUserEvent> RemoveMemberFromEventAsync(AppUserEvent aue);
 
-        Task<List<ReturnMemberDto>> GetEventMembers(string eventId);
+        Task<List<ReturnMemberDto>> GetEventMembersAsync(string eventId);
+        Task<AppUserEvent> GetMemberAsync(string userId, string eventId);
 
-        Task<AppUserEvent> CheckIfMember(string eventId, string userId);
+        Task<Boolean> CheckIfMemberAsync(string userId, string eventId);
     }
 }

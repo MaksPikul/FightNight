@@ -1,6 +1,6 @@
-﻿namespace fightnight.Server.Models.Tables
+﻿namespace fightnight.Server.Dtos.Message
 {
-    public class Message
+    public class ReturnMessageDto
     {
         public string id { get; set; } = Guid.NewGuid().ToString();
         public string eventId { get; set; } = string.Empty;
@@ -10,7 +10,5 @@
         public string message { get; set; } = string.Empty;
         public DateTime timeStamp { get; set; } = DateTime.Now;
         public bool IsEdited { get; set; } = false;
-        public AppUser AppUser { get; set; }
-        public Event Event { get; set; }
     }
 }

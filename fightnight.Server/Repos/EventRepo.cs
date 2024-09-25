@@ -36,7 +36,8 @@ namespace fightnight.Server.repo
 
         public async Task<List<EventDto>> GetUserEvents(AppUser user)
         {
-            return await _context.AppUserEvent.Where(u => u.AppUserId == user.Id)
+            return await _context.AppUserEvent
+                .Where(u => u.AppUserId == user.Id)
                 .Select(eventV =>
                     new EventDto
                     {
@@ -66,7 +67,7 @@ namespace fightnight.Server.repo
             return eventVar;
         }
 
-        public EventRole GetUserEventRoleAsync(string userId, string eventId)
+        public EventRole GetUserEventRole(string userId, string eventId)
         {
             return _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).Select(u => u.Role).FirstOrDefault();
         }
