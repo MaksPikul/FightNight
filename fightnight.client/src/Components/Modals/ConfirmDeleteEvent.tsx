@@ -16,10 +16,11 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useModal } from "../../Hooks/use-modal-store";
 import { useRef, useState } from "react";
-import { DeleteEvent } from "../../Services/EventsService";
+import { DeleteEventApi } from "../../Services/EventsService";
 import { FormError } from "../Misc/formError";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../ui/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 
 
@@ -32,31 +33,32 @@ export const ConfirmDeleteEventModal = () => {
 
     const { eventTitle, eventId } = data
     const isModalOpen = isOpen && type === "ConfirmDeleteEvent";
-    const {toast } = useToast()
+    const { toast } = useToast()
+
+    const queryClient = useQueryClient()
+
+    const deleteEventMutation = useMutation({
+        mutationFn: () => DeleteEventApi(eventId),
+        onSuccess: () => {
+            //navigate("/home")
+            handleClose()
+            toast({
+                title: "Event Deleted and Closed Successfully",
+                description: "An email has been sent out to notify everyone involved.",
+            })
+        },
+        onError: (err) => {
+            setError(err.message)
+        },
+        onSettled: async () => {
+            return await queryClient.invalidateQueries({ queryKey: ['userEvents'] })
+        },
+    })
 
     const onSubmit = async () => {
+        if (eventTitle === inputValue) deleteEventMutation.mutate()
 
-        
-        if (eventTitle === inputValue) {
-            const res = await DeleteEvent(eventId)
-            if (res?.data) {
-                navigate("/home")
-                handleClose()
-                toast({
-                    title: "Event Deleted Successfully!",
-                    description: "An email has been sent out to notify everyone involved.",
-                })
-            }
-            else if (res?.response) {
-                setError(res?.response?.data)
-            }
-            else {
-                setError("System Error")
-            }
-        }
-        else {
-            setError("Incorrect Input")
-        }
+        else setError("The title you've entered is wrong")
     }
 
     const handleClose = () => {

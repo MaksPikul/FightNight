@@ -24,8 +24,6 @@ export const EventsBox = () => {
 
     //"sort / filter / search / completed"
     const queryClient = useQueryClient();
-
-    const { user } = useAuth();
     //const [events, setEvents] = useState<Event[]>([]);
 
     //const { getUserEvents } = useEvent();
@@ -36,13 +34,13 @@ export const EventsBox = () => {
         data: events,
         isFetching
     } = useQuery({
-        queryFn: () => GetUserEvents(user?.userId),
+        queryFn: () => GetUserEvents(),
             queryKey: ['userEvents'],
         });
 
-    if (isPending) return "loading..."
+    if (isPending) return <p>"loading..."</p>
 
-    if (error) return error
+    if (error) return <p>{error.message}</p>
 
     //const x = queryClient.getQueryData(['userEvents', user?.userId]);
     //console.log(x[0])

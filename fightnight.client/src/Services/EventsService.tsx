@@ -5,16 +5,14 @@ import * as z from "zod"
 const api = "https://localhost:7161/api/"
 
 export const GetUserEvents = async (
-    userId : string
 ) => {
-    
-    console.log(userId)
-    console.log("i just ran")
-    const res = await fetch(api + `event/user/${userId}`, {
+    const res = await fetch(api + `event/user`, {
         method: "get",
         credentials: "include"
     })
-    return res.json()
+    const x = await res.json()
+    console.log( x)
+    return x
 }
 
 // no need to send userId, user found in backend with cookie
@@ -40,8 +38,9 @@ export const GetEventAndUsers = async (eventId: string) => {
             method: "get",
             credentials: "include"
         })
-        
-    return res.json()
+        const x = res.json()
+    console.log(x)
+    return x
 
 }
 
@@ -60,21 +59,18 @@ export const UpdateEvent = async (
     return await res.json()
 }
 
-export const DeleteEvent = async (
+export const DeleteEventApi = async (
     eventId: string
 ) => {
 
-    //Delete from Key ['Event', eventId]
-
-    try {
-        const data = await axios.delete(api + `event/` + eventId, {
-            withCredentials: true
+    const res = await fetch(api + `event/${eventId}`,
+        {
+            method: "delete",
+            credentials: "include"
         })
-        return data
-    }
-    catch (err) {
-        return err
-    }
+    const x = res.json()
+    console.log(x)
+    return x
 }
 
 export const UploadEventBanner = async (

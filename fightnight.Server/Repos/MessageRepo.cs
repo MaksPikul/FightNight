@@ -41,8 +41,11 @@ namespace fightnight.Server.Repos
         {
             return await _context.Message
                 .Where(e => e.eventId == eventId)
+                .OrderBy(m => m.timeStamp)
                 .Select(m => m.ReturnMessageMapper())
                 .ToListAsync();
+
+            //return messages.OrderBy(m => m.timeStamp);
         }   
 
         //TResult

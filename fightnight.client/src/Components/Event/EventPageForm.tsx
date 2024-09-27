@@ -96,13 +96,6 @@ export const EventPageForm = ({
 
     return (
         <div>
-            <EventHeader
-                title={"Event Information"}
-                //image={file && URL.createObjectURL(file)}
-                desc={"Adjust Information about the event itself"} />
-
-
-
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}

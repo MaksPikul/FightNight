@@ -18,6 +18,7 @@ namespace fightnight.Server.Data
         public DbSet<UserToken> UserToken { get; set; }
         public DbSet<Message> Message { get; set; }
         public DbSet<AppUserEvent> AppUserEvent { get; set; }
+        public DbSet<Invitation> Invitation { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -42,6 +43,17 @@ namespace fightnight.Server.Data
             builder.Entity<Message>()
                 .HasOne(u => u.Event)
                 .WithMany(u => u.Messages)
+                .HasForeignKey(p => p.eventId);
+
+            builder.Entity<Invitation>(x => x.HasKey(p => new { p.userId, p.eventId }));
+            builder.Entity<Invitation>()
+                .HasOne(u => u.AppUser)
+                .WithMany(u => u.Invitations)
+                .HasForeignKey(p => p.userId);
+
+            builder.Entity<Invitation>()
+                .HasOne(u => u.Event)
+                .WithMany(u => u.Invitations)
                 .HasForeignKey(p => p.eventId);
 
             List<IdentityRole> roles = new List<IdentityRole> {

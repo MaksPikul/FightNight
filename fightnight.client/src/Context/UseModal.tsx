@@ -21,8 +21,8 @@ export const ModalProvider = () => {
         <>
             <SignOutModal />
             <CreateEventModal />
-            <ConfirmDeleteEventModal />
             <UploadBannerModal />
+            <ConfirmDeleteEventModal />
             <ConfirmDeleteMessageModal />
         </>
     )

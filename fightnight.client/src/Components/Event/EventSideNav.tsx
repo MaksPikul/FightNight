@@ -24,8 +24,6 @@ export const EventMembers = () => {
         acc[user.type].push(user);
         return acc;
     }, {});
-
-    console.log(groupedUsers.guest)
     
 
     return (

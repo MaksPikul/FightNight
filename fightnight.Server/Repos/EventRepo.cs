@@ -22,7 +22,7 @@ namespace fightnight.Server.repo
         {
             return await _context.Event.ToListAsync();
         }
-        public async Task<Event?> GetEventAsync(string id)
+        public async Task<Event> GetEventAsync(string id)
         {
             return await _context.Event.FindAsync(id);
         }
@@ -53,14 +53,14 @@ namespace fightnight.Server.repo
                 .ToListAsync();
         }
 
-        public async Task<Event> DeleteEvent(Event eventVar)
+        public async Task<Event> DeleteEventAsync(Event eventVar)
         {
             _context.Event.Remove(eventVar);
             await _context.SaveChangesAsync();
             return eventVar;
         }
 
-        public async Task<Event> UpdateEvent(Event eventVar)
+        public async Task<Event> UpdateEventAsync(Event eventVar)
         {
             _context.Event.Update(eventVar);
             await _context.SaveChangesAsync();
@@ -71,6 +71,8 @@ namespace fightnight.Server.repo
         {
             return _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).Select(u => u.Role).FirstOrDefault();
         }
+
+        
 
 
 

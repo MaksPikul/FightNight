@@ -14,8 +14,6 @@ export const UserGroup = ({
     userList
 }: UserGroupProps) => {
 
-    console.log(userList)
-
     return (
         <div>
             <div className="flex flex-row">

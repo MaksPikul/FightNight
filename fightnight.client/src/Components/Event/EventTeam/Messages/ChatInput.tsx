@@ -1,26 +1,24 @@
 import { useForm } from "react-hook-form"
-import { Form, FormControl, FormDescription, FormField, FormMessage, FormItem, FormLabel } from "../../ui/form"
-import { Input } from "../../ui/input"
+import { Form, FormControl, FormDescription, FormField, FormMessage, FormItem, FormLabel } from "../../../ui/form"
+import { Input } from "../../../ui/input"
 import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { MessageSchema } from "../../../Schemas"
+import { MessageSchema } from "../../../../Schemas"
 import { Paperclip, Plus } from "lucide-react"
-import { Button } from "../../ui/button"
+import { Button } from "../../../ui/button"
 import { HubConnection } from "@microsoft/signalr"
 import { Message } from "../../../Models/Message"
 import { useMessage } from "../../../Context/UseMessage"
-import { useAuth } from "../../../Context/UseAuth"
+import { useAuth } from "../../../../Context/UseAuth"
 import { UseMutateFunction, useMutation } from "@tanstack/react-query"
 import { AddMessageApi } from "../../../Services/MessageService"
 
 
 interface ChatInputProps {
-    eventId: string
-    mutate: any
+    mutate: UseMutateFunction<void, Error, string, unknown>
 }
 
 export const ChatInput = ({
-    eventId,
     mutate
 }:ChatInputProps) => {
     const { user } = useAuth()

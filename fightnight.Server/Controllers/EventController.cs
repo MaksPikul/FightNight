@@ -67,7 +67,7 @@ namespace fightnight.Server.Controllers
                 return NotFound();
             }
 
-            return Ok(eventV.ToEventDto(userEventRole));
+            return Ok(eventV.ToEventDtoWCodes(userEventRole));
         }
 
         //Creates event, Adds to Joined Table, Returns Event Id to redirect
@@ -77,11 +77,15 @@ namespace fightnight.Server.Controllers
         {
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
+
+            //create a join code
+
             var eventModel = new Event
             {
                 adminId = appUser.Id,
                 title = eventDto.Title,
-                date = eventDto.Date
+                date = eventDto.Date,
+                joinCode = "123456"
             };
             //return Ok(eventDto.date);
 
@@ -134,12 +138,12 @@ namespace fightnight.Server.Controllers
                 eventVs.numRounds = eventDto.numRounds;
                 eventVs.roundDur = eventDto.roundDur;
 
-                await _eventRepo.UpdateEvent(eventVs);
+                await _eventRepo.UpdateEventAsync(eventVs);
                 return Ok(eventVs.ToEventDto(ueRole));
             }
             else
             {
-                return BadRequest("Admin Action, You are Unauthorized");
+                return Unauthorized("Admin Action, You are Unauthorized");
             }
         }
 
@@ -162,13 +166,69 @@ namespace fightnight.Server.Controllers
             {
                 var eventVar = await _eventRepo.GetEventAsync(eventId);
 
-                await _eventRepo.DeleteEvent(eventVar);
+                await _eventRepo.DeleteEventAsync(eventVar);
+                
+                // set redirect in response
+
                 return Ok("Event Deleted");
             }
             else
             {
-                return BadRequest("Admin Action, You are Unauthorized");
+                return Unauthorized("Admin Action, You are Unauthorized");
             }
+        }
+
+        [HttpPatch("generate-code")]
+        [Authorize]
+        public async Task<IActionResult> GenerateCode([FromBody] string eventId, EventRole forRole)
+        {
+            var email = User.GetEmail();
+            var appUser = await _userManager.FindByEmailAsync(email);
+            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, eventId);
+
+            if (!ueRole.Equals(EventRole.Admin))
+            {
+                return Unauthorized("Admin Action, You are Unauthorized");
+            }
+
+            var curEvent = await _eventRepo.GetEventAsync(eventId);
+            if (curEvent == null) return BadRequest("Event Not Found");
+
+            // generate code
+            var newCode = "abcdef";
+
+            //check db if event with this code exists, put in a while loop, to create a newCode
+            while (true)
+            {
+                //find event
+
+                if (forRole == EventRole.Moderator)
+                {
+                    //find event with code
+                    // if no code, 
+                    curEvent.modJoinCode = newCode;
+                    // make new code and retry
+                }
+                else if (forRole == EventRole.Fighter)
+                {
+                    //find event with code
+                    // if no code, 
+                    curEvent.fighterJoinCode = newCode;
+                    // make new code and retry
+                }
+                break;
+            }
+
+            
+
+
+
+
+            await _eventRepo.UpdateEventAsync(curEvent);
+
+            //check for event code update creation success
+
+            return Ok(newCode);
         }
     }
 }

@@ -62,17 +62,18 @@ namespace fightnight.Server.Controllers
                     //userPicture = msg.userPicture,
                     eventId = msgBody.eventId
                 };
+                var x = await _messageRepo.CreateMessageAsync(newMsg);
                 //return Ok(newMsg);
-                await _messageRepo.CreateMessageAsync(newMsg);
+                Console.WriteLine(x);
 
                 if (newMsg == null) return StatusCode(500, "Could not add AppUserEvent to DB");
-                
+
                 //add message to redis and update
 
-
-
-                await _hubContext.Clients.Group(msgBody.eventId).SendAsync("SendMsgReq", newMsg);
-
+                await _hubContext.Clients
+                    .Group(msgBody.eventId)
+                    .SendAsync("SendMsgRes", newMsg.ReturnMessageMapper());
+                
                 return Ok(newMsg.ReturnMessageMapper());
             }
             else

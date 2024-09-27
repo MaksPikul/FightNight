@@ -8,10 +8,6 @@ namespace fightnight.Server.Hubs
     {
         public async Task ConnectionReq(UserConnection conn)
         {
-            var user = Context.User;
-            Console.WriteLine(user);
-            //check if user is authed
-            //check if user in event
             await Groups
                 .AddToGroupAsync(Context.ConnectionId, conn.eventId);
 
@@ -19,15 +15,16 @@ namespace fightnight.Server.Hubs
                 .Group(conn.eventId)
                 .SendAsync(
                 "ConnectionRes", 
-                conn.username + " Has joined lobby"
+                "someone Has joined lobby"
                 );
-        }
 
-        public Task SendMsgReq(Message newMsg)
+
+        }
+    
+
+        public async Task SendMsgReq(Message newMsg)
         {
-            return Clients
-                .Group(newMsg.eventId)
-                .SendAsync("SendMsgRes", newMsg);
+            await Clients.Group(newMsg.eventId).SendAsync("SendMsgRes", newMsg);
         }
 
         public Task DeleteMsgReq()

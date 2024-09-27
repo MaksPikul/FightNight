@@ -9,7 +9,7 @@ export type UserProfileToken = {
 
 export type UserProfile = {
     userId: string,
-    username: string,
+    userName: string,
     email: string,
     picture: string,
     isAuthed: boolean,

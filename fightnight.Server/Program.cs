@@ -179,9 +179,9 @@ app.UseAuthorization();
 //app.UseSession();
 
 //responseCaching
-
-app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
+app.MapControllers();
+
 
 app.MapFallbackToFile("/index.html");
 

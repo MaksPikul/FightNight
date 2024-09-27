@@ -3,28 +3,39 @@ const api = "https://localhost:7161/api/"
 export const AddMessageApi = async (
     msg: string,
     eventId: string,
-    userId: string,
     username: string,
     userPicture: string
 ) => {
-    fetch(api + "message",
+    const res = await fetch(api + "message",
         {
-            body: JSON.stringify({ msg, eventId, userId, username, userPicture }),
+            body: JSON.stringify({ msg, eventId, username, userPicture }),
             method: "post",
+            headers: {
+                'Content-Type': 'application/json'
+            },
             credentials: "include"
-        }).then((res) => console.log(res))
+        })
+    const x = await res.json()
+    console.log(x)
+    return x
 }
 
 export const DeleteMessageApi = async (
     msgId: string,
     eventId: string,
 ) => {
-    fetch(api + "message",
+    const res = await fetch(api + "message",
         {
             body: JSON.stringify({ msgId, eventId }),
             method: "delete",
+            headers: {
+                'Content-Type': 'application/json'
+            },
             credentials: "include"
-        }).then((res) => res.json())
+        })
+    //const x = await res.json()
+    //console.log(x)
+    return res
 }
 
 export const UpdateMessageApi = async (
@@ -38,7 +49,7 @@ export const UpdateMessageApi = async (
             method: "patch",
             credentials: "include"
         })
-    return res
+    return await res.json()
 }
 
 export const GetEventMessagesApi = async (
@@ -50,5 +61,6 @@ export const GetEventMessagesApi = async (
             method: "get",
             credentials: "include"
         })
-    return res
+    const x = await res.json()
+    return x
 }

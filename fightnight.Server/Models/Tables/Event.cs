@@ -16,6 +16,8 @@ namespace fightnight.Server.Models.Tables
         public string desc { get; set; } = string.Empty;
         public string type { get; set; } = string.Empty;
         public EventStatus status { get; set; } = EventStatus.Planning;
+        public string modJoinCode { get; set; } = string.Empty;
+        public string fighterJoinCode { get; set; } = string.Empty;
         public string organizer { get; set; } = string.Empty;
         public string adminId { get; set; } = string.Empty;
         public int numMatches { get; set; } = 3;
@@ -28,6 +30,7 @@ namespace fightnight.Server.Models.Tables
         public string bannerUrl { get; set; } = string.Empty;
         public List<AppUserEvent> AppUserEvents { get; set; } = new List<AppUserEvent>();
         public List<Message> Messages { get; set; } = new List<Message>();
+        public List<Invitation> Invitations { get; set; } = new List<Invitation>();
 
     }
 

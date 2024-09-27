@@ -18,7 +18,6 @@ export const UserCard = ({
     userProfile,
     keys
 }: UserCardProps) => {
-    console.log(userProfile)
     const { user } = useAuth()
     
     const isAdmin = userProfile.role === EventRole.Admin
