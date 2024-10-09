@@ -2,7 +2,7 @@ import { create } from "zustand"
 import { Message } from "../Models/Message";
 
 export type ModalType = "signOut" | "CreateEvent" | "ConfirmDeleteEvent"
-    | "UploadBanner" | "ConfirmDeleteMessage";
+    | "UploadBanner" | "ConfirmDeleteMessage" | "InviteMember"
 
 interface ModalData {
     eventTitle?: string

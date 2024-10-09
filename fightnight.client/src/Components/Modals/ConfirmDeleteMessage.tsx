@@ -12,6 +12,7 @@ import {
 import { MessageBoxContent } from "../Event/EventTeam/Messages/MessageBoxContent";
 import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
+import { Message } from "../../Models/Message";
 
 
 
@@ -42,10 +43,10 @@ export const ConfirmDeleteMessageModal = () => {
             })
         },
         onSettled: async () => {
-            return await queryClient.invalidateQueries({ queryKey: ["Messages", message?.eventId] })
+            //return await queryClient.invalidateQueries({ queryKey: ["Messages", message?.eventId] })
+            
         },
     })
-
 
     return (
         <Dialog open={isModalOpen} onOpenChange={() => onClose()}>

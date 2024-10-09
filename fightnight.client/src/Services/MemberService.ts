@@ -15,6 +15,21 @@ export const AddMemberToEvent = async (
         }).then((res) => res.json())
 }
 
+
+export const SendInvite = async (
+    email: string,
+    allocatedRole: EventRole.Fighter | EventRole.Moderator | EventRole.Spectator,
+    eventId: string
+) => {
+    const result = await fetch(api + "invite",
+        {
+            body: JSON.stringify({ email, eventId, allocatedRole }),
+            method: "post",
+            credentials: "include"
+        })
+    console.log(await result.json())
+}
+
 export const RemoveMemberFromEvent = async (
     userId: string,
     eventId: string

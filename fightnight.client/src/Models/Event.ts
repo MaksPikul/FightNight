@@ -27,7 +27,7 @@ export enum EventStatus {
 
 export enum EventRole {
     Spectator,
-    Moderator,
-    Fighter,
-    Admin
+    Moderator ,
+    Fighter ,
+    Admin 
 }

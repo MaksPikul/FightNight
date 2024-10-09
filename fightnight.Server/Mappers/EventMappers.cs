@@ -7,8 +7,8 @@ namespace fightnight.Server.Mappers
 
     public class EventDtoWCodes : EventDto
     {
-        public string modJoinCode { get; set; }
-        public string fighterJoinCode { get; set; }
+        public string joinCode { get; set; }
+        //public string fighterJoinCode { get; set; }
     }
 
 
@@ -30,7 +30,7 @@ namespace fightnight.Server.Mappers
                 type = eventModel.type,
                 status = eventModel.status,
                 organizer = eventModel.organizer,
-                adminId = eventModel.adminId,
+                //adminId = eventModel.adminId,
                 numMatches = eventModel.numMatches,
                 numRounds = eventModel.numRounds,
                 roundDur = eventModel.roundDur,
@@ -52,13 +52,13 @@ namespace fightnight.Server.Mappers
                 type = eventModel.type,
                 status = eventModel.status,
                 organizer = eventModel.organizer,
-                adminId = eventModel.adminId,
+                //adminId = eventModel.adminId,
                 numMatches = eventModel.numMatches,
                 numRounds = eventModel.numRounds,
                 roundDur = eventModel.roundDur,
                 role = role,
-                modJoinCode = eventModel.modJoinCode,
-                fighterJoinCode = eventModel.fighterJoinCode,
+                joinCode = eventModel.joinCode,
+                //fighterJoinCode = eventModel.fighterJoinCode,
             };
         }
 

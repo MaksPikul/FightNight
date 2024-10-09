@@ -27,6 +27,11 @@ namespace fightnight.Server.repo
             return await _context.Event.FindAsync(id);
         }
 
+        public Task<Event> GetEventWithJoinCodeAsync(string code)
+        {
+            return null;
+        }
+
         public async Task<Event> CreateEventAsync(Event EventModel)
         {
             await _context.Event.AddAsync(EventModel);
@@ -44,7 +49,7 @@ namespace fightnight.Server.repo
                         id = eventV.Event.id,
                         title = eventV.Event.title,
                         date = eventV.Event.date,
-                        adminId = eventV.Event.adminId,
+                        //adminId = eventV.Event.adminId,
                         role = eventV.Role,
                         venueAddress = eventV.Event.venueAddress,
                         time = eventV.Event.time,
@@ -71,6 +76,8 @@ namespace fightnight.Server.repo
         {
             return _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).Select(u => u.Role).FirstOrDefault();
         }
+
+        
 
         
 

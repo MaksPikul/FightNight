@@ -120,7 +120,13 @@ namespace fightnight.Server.Controllers
             message.message = msgBody.newMsg;
             message.IsEdited = true;
             await _messageRepo.UpdateMessageAsync(message);
-            return Ok(message);
+            //if error, return it
+
+            await _hubContext.Clients
+                    .Group(msgBody.eventId)
+                    .SendAsync("EditMsgRes", msgBody);
+
+            return Ok("Message Edited");
         }
 
 
@@ -136,6 +142,10 @@ namespace fightnight.Server.Controllers
 
             var message = await _messageRepo.GetMessageAsync(msgBody.msgId);
             if (message == null) return BadRequest("Message Not Found");
+
+            await _hubContext.Clients
+                    .Group(msgBody.eventId)
+                    .SendAsync("DeleteMsgRes", msgBody.msgId);
 
             await _messageRepo.DeleteMessageAsync(message);
             return Ok("Message Deleted");

@@ -16,15 +16,14 @@ namespace fightnight.Server.Models.Tables
         public string desc { get; set; } = string.Empty;
         public string type { get; set; } = string.Empty;
         public EventStatus status { get; set; } = EventStatus.Planning;
-        public string modJoinCode { get; set; } = string.Empty;
-        public string fighterJoinCode { get; set; } = string.Empty;
+        public string joinCode { get; set; } = Guid.NewGuid().ToString();
+        //public string fighterJoinCode { get; set; } = string.Empty;
         public string organizer { get; set; } = string.Empty;
-        public string adminId { get; set; } = string.Empty;
         public int numMatches { get; set; } = 3;
         public int numRounds { get; set; } = 3;
         public int roundDur { get; set; } = 3;
-        //public DateTime createdAt { get; set; } = DateTime.Now;
-        //public DateTime updatedAt { get; set; } 
+        public DateTime createdAt { get; set; } = DateTime.Now;
+        public DateTime updatedAt { get; set; } 
         //participant list
         //mod list
         public string bannerUrl { get; set; } = string.Empty;

@@ -24,6 +24,8 @@ function App() {
         isLoggedIn() === undefined ? <div>loading</div>
         :
         <Routes>
+                {/*<Route path="/eventInvite/:inviteId/:email" element={"Invite Page"} />*/}
+
             <Route element={<PublicViews />}>
                 <Route path="/" element={<div>landing page</div>} /> 
                 <Route path="/login" element={<LoginForm />} /> 

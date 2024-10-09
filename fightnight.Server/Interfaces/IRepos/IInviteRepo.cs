@@ -7,6 +7,7 @@ namespace fightnight.Server.Interfaces.IRepos
         Task<Invitation> AddInviteAsync(Invitation invitation); 
         Task<Invitation> UpdateInviteAsync(Invitation invitation);
         Task<Invitation> DeleteInviteAsync(Invitation invitation);
-        Task<Invitation> GetInvitationAsync(string code);
+        Task<Invitation> GetInvitationAsync(string Id);
+        Task<Boolean> InviteExistsAsync(string Email);
     }
 }

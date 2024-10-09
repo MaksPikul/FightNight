@@ -41,7 +41,7 @@ export const EventChat = ({
         ) => AddMessageApi(msg, eventId, user?.userName, "user?.picture"),
         onSettled: async () => {
             
-            return await queryClient.invalidateQueries({ queryKey: ["Messages", eventId] })
+            //return await queryClient.invalidateQueries({ queryKey: ["Messages", eventId] })
         },
     })
 
@@ -61,27 +61,39 @@ export const EventChat = ({
 
                 console.log(message)
             });
-            connection.on("SendMsgRes", (message) => {
+            connection.on("SendMsgRes", (newMsg) => {
 
-                // user sends api, ticked
-                // msg gets added to db, ticked
-                // msg obj get send over websockets to here,
-                // simply append message onto list
-                console.log(message)
+                
+                queryClient.setQueryData(
+                    ["Messages", eventId],
+                    (oldMsgs: Message[]) => {
+                    return [...oldMsgs, newMsg]
+                })
+                
+                console.log(newMsg)
 
             });
             connection.on("EditMsgRes", (message) => {
 
-                console.log(message)
-                //find msg by id in list,
-                //edit msg and flag
+                queryClient.setQueryData(
+                    ["Messages", eventId],
+                    (oldMsgs: Message[]) => {
+                       return oldMsgs.map((oldMsg) => {
+                            return oldMsg.id === message.id ? message : oldMsg
+                        })
+                    })
 
+                console.log(message)
             });
-            connection.on("DeleteMsgRes", (message) => {
-                console.log(message)
-                //find msg by id in list,
-                //remove from list
+            connection.on("DeleteMsgRes", (messageId) => {
 
+                
+                queryClient.setQueryData(
+                    ["Messages", eventId],
+                    (oldMsgs: Message[]) => {
+                        return oldMsgs.filter((msg) => msg.id !== messageId)
+                    })
+                console.log(messageId)
             });
             connection.start()
                 .then(() => {

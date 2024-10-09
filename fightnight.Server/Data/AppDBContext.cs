@@ -45,16 +45,19 @@ namespace fightnight.Server.Data
                 .WithMany(u => u.Messages)
                 .HasForeignKey(p => p.eventId);
 
-            builder.Entity<Invitation>(x => x.HasKey(p => new { p.userId, p.eventId }));
-            builder.Entity<Invitation>()
-                .HasOne(u => u.AppUser)
-                .WithMany(u => u.Invitations)
-                .HasForeignKey(p => p.userId);
-
+            builder.Entity<Invitation>(x => x.HasKey(p => new { p.Id }));
             builder.Entity<Invitation>()
                 .HasOne(u => u.Event)
                 .WithMany(u => u.Invitations)
                 .HasForeignKey(p => p.eventId);
+
+            builder.Entity<Invitation>()
+                .HasOne(u => u.AppUser)
+                .WithMany(u => u.Invitations)
+                .HasPrincipalKey(u => u.Email)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
 
             List<IdentityRole> roles = new List<IdentityRole> {
                 new IdentityRole

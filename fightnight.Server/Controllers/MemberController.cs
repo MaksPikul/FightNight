@@ -1,5 +1,6 @@
 ﻿using Amazon.S3.Model;
 using fightnight.Server.Data;
+using fightnight.Server.Dtos.Account;
 using fightnight.Server.Dtos.Member;
 using fightnight.Server.Dtos.NewFolder;
 using fightnight.Server.Dtos.User;
@@ -9,7 +10,10 @@ using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models;
 using fightnight.Server.Models.Tables;
+using fightnight.Server.Models.Types;
 using fightnight.Server.Repos;
+using fightnight.Server.Services;
+using FluentEmail.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -44,112 +48,131 @@ namespace fightnight.Server.Controllers
             _inviteRepo = inviteRepo;
         }
 
+        /*
+        Share Link - uses event joinCode
+        Invite Sent by email - uses inviteId
 
-        // Create Invite Link, those who click link will join, "What if no account?"
-        // Have invite link in url, so after login, they can join?
+        Fighters pasting code into search to register interest, if over fighter limit, add to waitlist
 
-        // Invite Code, if you have code, go to "Enter event as Mod / fighter"
-
-        // Send invitiation by searching up email,
-        // if no account, send email to notify theyve been invited, and for them to make an account, invite will be in the 
-        // admin or those who send invites needs to be able to see who hes invited, invites after a certain time, need to be deleted, max 30 days.
-
-        // If account already exists, theyll see invite in their notifications
-
-
-        // join by entering code, User clicks on button in home, join event with code, user enters code and is redirected
-
-        // join by clicking link, 
-        // join by accepting invite, chekc if user in invites, 
+        - Logged in at home, sees notification to join, clicks accept invite
+        - Click link and Logged in and it takes you to invite page, once accepted, redirects to event page
+        - Logged out, takes you to register, once registered, redirects to invite page, once accepted, recirects to event page
+         */
 
 
-        //invite sent by email, shows up in user notifications once they create account, user can click the link sent in email or go to their notifications and click to accept
-        // if email doesnt own account, redirect to register, once they register, their invite will be in their notifications
-
-
-        //Create invite which is sent out to users,
+       
         [HttpPost("invite")]
         [Authorize]
-        public async Task<IActionResult> SendInvite([FromBody] string userId, string eventId, EventRole role, int Expiration)
+        public async Task<IActionResult> SendInvite([FromBody] SendInviteBody sendInvBody)
         {
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
-            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, eventId);
+            var sendingUserEmail = User.GetEmail();
+            var appUser = await _userManager.FindByEmailAsync(sendingUserEmail);
+
+            // get event i think
+            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, sendInvBody.eventId);
 
             if (!ueRole.Equals(EventRole.Admin))
             {
                 return Unauthorized("You are unauthorized to complete this action");
             }
-            // requesting user authorised and in event
+
+            var existingInvite = await _inviteRepo.InviteExistsAsync(sendInvBody.newMemberEmail);
+            if (existingInvite) return BadRequest("Invite Already Sent");
+
+            var user = await _userManager.FindByEmailAsync(sendInvBody.newMemberEmail);
+            if (user != null)
+            {
+                var existingMember = await _memberRepo.CheckIfMemberAsync(user.Id, sendInvBody.eventId);
+                if (existingMember) return BadRequest("User already a member of event");
+            }
 
             var invite = new Invitation
             {
-                userId = userId,
-                eventId = eventId,
-                expiration = DateTime.UtcNow.AddDays(Expiration),
-                proposedRole = role,
+                userEmail = sendInvBody.newMemberEmail,
+                eventId = sendInvBody.eventId,
+                //expiration = DateTime.UtcNow.AddDays(Expiration),
+                proposedRole = sendInvBody.role,
             };
 
             await _inviteRepo.AddInviteAsync(invite);
-
+            // if error, return error
             // if invite sent successfully,
+            
+            string emailVerifyLink = "https://localhost:5173/eventInvite?token=" + invite.Id + "&email=" + sendInvBody.newMemberEmail;
 
-            //Create Email
-            await _emailService.Send("email");
+            /*
+            var email = new ConfirmEmailTemplate
+            {
+                SendingTo = sendInvBody.newMemberEmail,
+                EmailBody = "<p>Click <a href=" + emailVerifyLink
+                + ">Here</a> to join event.</p>"
+            };
+            await _emailService.Send(email);
+            */
 
-            //if user doesnt accept in 30 days
-            return Ok("An invitation has been sent to this email.");
+            return Ok(emailVerifyLink);//"If email exists, It will receive this Invite.");
         }
 
 
-        // user clicks link, redirect to one of the pages
-        [HttpPost("join-w-link")]
-        public async Task<IActionResult> JoinWithLink([FromBody] string codeInLink)
+        // user clicks link in email or clicks Accept in home page, redirect to invite page, user clicks JOIN 
+        [HttpPost("join-w-invite")]
+        public async Task<IActionResult> JoinWithLink([FromBody] string inviteId)
         {
+            var invite = await _inviteRepo.GetInvitationAsync(inviteId);
+            if (invite == null) return NotFound("Invitation not found");
+            else if (invite.expiration > DateTime.Now) {
+                await _inviteRepo.DeleteInviteAsync(invite);
+                return BadRequest("Invitation has expired, Ask for another.");
+             }
 
-        }
+            //checks if user exsists
+            var invitedUser = await _userManager.FindByEmailAsync(invite.userEmail);
+            if (invitedUser == null) return Redirect("https://localhost:5173/register?inviteId=" + invite.Id);
+            
+            //checks if user logged in
+            var loggedInUserEmail = User.GetEmail();
+            if (loggedInUserEmail == null) return Redirect("https://localhost:5173/login?inviteId=" + invite.Id);
 
-
-
-
-        // user enters code in home page
-        [HttpPost("join-w-code")]
-        [Authorize]
-        public async Task<IActionResult> JoinWithCode([FromBody] string code, EventRole propRole)
-        {
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
-
-
-            // get event with code
-            var eventVar = _eventRepo.GetEventWithCode(code);
-
-            if (eventVar == null) return NotFound("Event with this join code doesn't exist");
-
+            //User logged in, so hes redirected to event team page
+            var appUser = await _userManager.FindByEmailAsync(loggedInUserEmail);
             var AppUserEvent = new AppUserEvent
             {
-                EventId = appUser.Id,
-                AppUserId = eventVar.eventId,
-                Role = propRole,
+                EventId = invite.eventId,
+                AppUserId = appUser.Id,
+                Role = invite.proposedRole,
             };
 
-            await _memberRepo.AddMemberToEventAsync(AppUserEvent);
-            //Check if failed, 
-            //Check if already a member
+            await _inviteRepo.DeleteInviteAsync(invite);
 
-            return Ok(
-                message:"You have joined the event as " + propRole,
-                eventId: eventVar.id // for redirect
-            );
-
-
+            return Redirect("https://localhost:5173/event/" + invite.eventId + "/team");
         }
 
+        // user clicks shared link
+        [HttpPost("join-w-share")]
+        public async Task<IActionResult> JoinWithCode([FromBody] string eventJoinCode)
+        {
+            var eventVar = await _eventRepo.GetEventWithJoinCodeAsync(eventJoinCode);
+            if (eventVar == null) return NotFound("Event with this join code doesn't exist");
 
-        //admin asks to generate new code, CODE FIRST GENERATED ON EVENT CREATION
-        
+            var loggedInUserEmail = User.GetEmail();
+            if (loggedInUserEmail == null) return Redirect("https://localhost:5173/login?inviteId=" + eventJoinCode);
 
+            var appUser = await _userManager.FindByEmailAsync(loggedInUserEmail);
+            var AppUserEvent = new AppUserEvent
+            {
+                EventId = eventVar.id,
+                AppUserId = appUser.Id,
+                Role = EventRole.Moderator,
+            };
 
+            var result = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventVar.id);
+            if (result == true) return BadRequest("Already a member");
+
+            await _memberRepo.AddMemberToEventAsync(AppUserEvent);
+            //Check if failed
+
+            return Redirect("https://localhost:5173/event/" + eventVar.id + "/team");
+        }
 
         [HttpPost("join")]
         [Authorize]

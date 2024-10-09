@@ -78,16 +78,18 @@ namespace fightnight.Server.Controllers
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
 
-            //create a join code
+            // Process payments
+
+            if (eventDto.Date < DateTime.UtcNow) {
+                return BadRequest("Cant create events for the past");
+            }
 
             var eventModel = new Event
             {
-                adminId = appUser.Id,
+                //adminId = appUser.Id,
                 title = eventDto.Title,
                 date = eventDto.Date,
-                joinCode = "123456"
             };
-            //return Ok(eventDto.date);
 
             await _eventRepo.CreateEventAsync(eventModel);
 
@@ -102,11 +104,9 @@ namespace fightnight.Server.Controllers
             };
 
             await _memberRepo.AddMemberToEventAsync(AppUserEvent);
-            
             if (AppUserEvent == null) return StatusCode(500, "Could not add AppUserEvent to DB");
 
             return Ok(eventModel.id);
-            
         }
 
         [HttpPatch]
@@ -195,34 +195,8 @@ namespace fightnight.Server.Controllers
             if (curEvent == null) return BadRequest("Event Not Found");
 
             // generate code
-            var newCode = "abcdef";
-
-            //check db if event with this code exists, put in a while loop, to create a newCode
-            while (true)
-            {
-                //find event
-
-                if (forRole == EventRole.Moderator)
-                {
-                    //find event with code
-                    // if no code, 
-                    curEvent.modJoinCode = newCode;
-                    // make new code and retry
-                }
-                else if (forRole == EventRole.Fighter)
-                {
-                    //find event with code
-                    // if no code, 
-                    curEvent.fighterJoinCode = newCode;
-                    // make new code and retry
-                }
-                break;
-            }
-
-            
-
-
-
+            var newCode = Guid.NewGuid().ToString();
+            curEvent.joinCode = newCode;
 
             await _eventRepo.UpdateEventAsync(curEvent);
 

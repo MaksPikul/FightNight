@@ -41,7 +41,7 @@ export const MessageBox = ({
     const editMessageMutation = useMutation({
         mutationFn: (newMsg: string ) => UpdateMessageApi(msg.id, msg.eventId, newMsg),
         onSettled: async () => {
-            return await queryClient.invalidateQueries({ queryKey: ["Messages", eventId] })
+            return await queryClient.invalidateQueries({ queryKey: ["Messages", msg.eventId] })
         },
     })
 

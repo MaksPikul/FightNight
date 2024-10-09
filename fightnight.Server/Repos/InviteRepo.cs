@@ -1,6 +1,7 @@
 ﻿using fightnight.Server.Data;
 using fightnight.Server.Models.Tables;
 using fightnight.Server.Interfaces.IRepos;
+using Microsoft.EntityFrameworkCore;
 
 namespace fightnight.Server.Repos
 {
@@ -23,9 +24,15 @@ namespace fightnight.Server.Repos
             throw new NotImplementedException();
         }
 
-        public async Task<Invitation> GetInvitationAsync(string eventId)
+        public async Task<Invitation> GetInvitationAsync(string Id)
         {
-            return await _context.Invitation.FindAsync(eventId);
+            return await _context.Invitation.FindAsync(Id);
+        }
+
+        public async Task<Boolean> InviteExistsAsync(string Email)
+        {
+            var result = await _context.Invitation.Where(inv => inv.userEmail == Email).FirstOrDefaultAsync();
+            return result != null;
         }
 
         public async Task<Invitation> UpdateInviteAsync(Invitation invite)

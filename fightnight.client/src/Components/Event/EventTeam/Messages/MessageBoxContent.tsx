@@ -59,13 +59,15 @@ export const MessageBoxContent = ({
             
 
             <div className="flex flex-col">
+                <div className="flex flex-row">
                 {!ownsAbove &&
                 <header className="flex flex-row gap-x-3 items-center">
                     <p className={`${msg.userId === user?.userId && "font-bold"}`}>{msg.username}</p>
                     <p className="text-xs">{/*outputDate(msg.timeStamp)*/"date"}</p>
 
-                    {isHovered && showOptions && <MessageBoxOptions msg={msg} />}
-                </header>}
+                    </header>}
+                {isHovered && showOptions && <MessageBoxOptions msg={msg} />}
+                </div>
 
                 <p>{msg.message}</p>
                 {msg.isEdited && <p className="text-sm">(Edited)</p>}

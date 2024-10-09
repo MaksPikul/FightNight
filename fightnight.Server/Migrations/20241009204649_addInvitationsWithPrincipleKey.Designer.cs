@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using fightnight.Server.Data;
 
@@ -11,9 +12,11 @@ using fightnight.Server.Data;
 namespace fightnight.Server.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20241009204649_addInvitationsWithPrincipleKey")]
+    partial class addInvitationsWithPrincipleKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,13 +54,13 @@ namespace fightnight.Server.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "f4323c0a-7f37-4082-891b-791d51e50126",
+                            Id = "7106afa2-f572-447d-9a98-565ab1565231",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "0ab6540d-97ec-465d-920d-d60ac63dd665",
+                            Id = "be014aae-f2c8-427d-82c8-365082e54ac1",
                             Name = "user",
                             NormalizedName = "USER"
                         });
@@ -328,9 +331,6 @@ namespace fightnight.Server.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("AppUserEmail")
-                        .HasColumnType("nvarchar(256)");
-
                     b.Property<string>("eventId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -351,14 +351,13 @@ namespace fightnight.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("userEmail")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppUserEmail");
-
                     b.HasIndex("eventId");
+
+                    b.HasIndex("userEmail");
 
                     b.ToTable("Invitation");
                 });
@@ -505,17 +504,16 @@ namespace fightnight.Server.Migrations
 
             modelBuilder.Entity("fightnight.Server.Models.Tables.Invitation", b =>
                 {
-                    b.HasOne("fightnight.Server.Models.Tables.AppUser", "AppUser")
-                        .WithMany("Invitations")
-                        .HasForeignKey("AppUserEmail")
-                        .HasPrincipalKey("Email")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("fightnight.Server.Models.Tables.Event", "Event")
                         .WithMany("Invitations")
                         .HasForeignKey("eventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("fightnight.Server.Models.Tables.AppUser", "AppUser")
+                        .WithMany("Invitations")
+                        .HasForeignKey("userEmail")
+                        .HasPrincipalKey("Email");
 
                     b.Navigation("AppUser");
 

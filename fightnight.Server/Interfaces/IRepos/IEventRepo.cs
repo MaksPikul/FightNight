@@ -8,6 +8,7 @@ namespace fightnight.Server.Interfaces.IRepos
     {
         Task<List<Event>> GetAllAsync();
         Task<Event> GetEventAsync(string id);
+        Task<Event> GetEventWithJoinCodeAsync(string code);
         Task<Event> CreateEventAsync(Event eventModel);
         Task<List<EventDto>> GetUserEvents(AppUser user);
         Task<Event> DeleteEventAsync(Event eventVar);

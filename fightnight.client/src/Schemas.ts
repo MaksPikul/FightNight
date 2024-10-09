@@ -1,4 +1,5 @@
 import * as z from "zod"
+import { EventRole } from "./Models/Event"
 
 export const LoginSchema = z.object({
     email: z.string()
@@ -66,4 +67,10 @@ export const NewPasswordSchema = z.object({
 
 export const MessageSchema = z.object({
     message: z.string()
+})
+
+
+export const InviteSchema = z.object({
+    email: z.string().email({ message: "Email is required" }),
+    role: z.number()
 })

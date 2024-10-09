@@ -140,6 +140,7 @@ builder.Services.AddResponseCompression(opts =>
 builder.Services.AddScoped<IEventRepo, EventRepo>();
 builder.Services.AddScoped<IMemberRepo, MemberRepo>();
 builder.Services.AddScoped<IMessageRepo, MessageRepo>();
+builder.Services.AddScoped<IInviteRepo, InviteRepo>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IGoogleTokenService, GoogleTokenService>();
