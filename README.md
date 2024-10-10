@@ -1,6 +1,6 @@
 <h1>Fight Night, Combat Sport Event Manager for Clubs and Societies </h1>
 <h4> Project which aims to teach me backend development with ASP.NET Core in C# </h4>
-<h4> and to work towards solving a problem for combat sport university societies </h4>
+<h4> and to work towards solving a problem for combat sport university societies, and hopefully event organising bodies </h4>
 <br>
 
 <h2> Tech Stack </h2>
