@@ -4,7 +4,7 @@
 <br>
 
 <h2> Tech Stack </h2>
-<h3>Front-End (Acceptable BareBones UI, Main concerns are the back end functionalities) </h3>
+<h3>Front-End <h5>(Acceptable BareBones UI, Main concerns are the back end functionalities)</h5> </h3>
 <ul>
   <li> Typescript </li>
   <li> React </li>
@@ -26,7 +26,7 @@
 <h2> Back End Features </h2>
 <ul>
   <li> Credentials and Google Login (Using OAuth Protocol) </li>
-  <li> Cookie Based Authorisation using Idnetity framework </li>
+  <li> Cookie Based Authorization using Idnetity framework </li>
   <li> CRUD operations using Rest APIs </li>
   <li> Web Sockets between server and client for event chat using Signal Framework </li>
   <li> Sending Emails using AWS SES Service </li>
