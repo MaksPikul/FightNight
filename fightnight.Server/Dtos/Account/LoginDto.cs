@@ -10,5 +10,6 @@ namespace fightnight.Server.Dtos.Account
         [Required]
         public string Password { get; set; }
         public Boolean rememberMe { get; set; }
+        public string inviteId { get; set; } = string.Empty;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using fightnight.Server.Models.Tables;
 using fightnight.Server.Models.Types;
 using Microsoft.AspNetCore.SignalR;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace fightnight.Server.Hubs
 {
@@ -20,21 +21,15 @@ namespace fightnight.Server.Hubs
 
 
         }
-    
-
-        public async Task SendMsgReq(Message newMsg)
+        public async void ForceDisconnectReq(string connId)
         {
-            await Clients.Group(newMsg.eventId).SendAsync("SendMsgRes", newMsg);
-        }
+            await Clients.Client(connId).SendAsync("DisconnectRes", "You are being disconnected by the server.");
 
-        public Task DeleteMsgReq()
-        {
-            return null;
-        }
-
-        public Task DisconnectReq()
-        {
-            return null;
+            var connection = Context.ConnectionAborted;
+            if (!connection.IsCancellationRequested)
+            {
+                Context.Abort(); // This will disconnect the client
+            }
         }
     }
 }

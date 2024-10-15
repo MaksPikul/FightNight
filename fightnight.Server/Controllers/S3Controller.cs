@@ -1,6 +1,10 @@
 ﻿using fightnight.Server.Data;
+using fightnight.Server.Extensions;
 using fightnight.Server.Interfaces.IServices;
+using fightnight.Server.Models.Tables;
 using fightnight.Server.Models.Types;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fightnight.Server.Controllers
@@ -12,18 +16,22 @@ namespace fightnight.Server.Controllers
         private readonly IStorageService _storageService;
         private readonly IConfiguration _config;
         private readonly AppDBContext _context;
+        private readonly UserManager<AppUser> _userManager;
         public S3Controller(
             IStorageService storageService,
             IConfiguration configuration,
-            AppDBContext context) 
+            AppDBContext context,
+            UserManager<AppUser> userManager) 
         {
             _storageService = storageService;
             _config = configuration;
             _context = context;
+            _userManager = userManager;
         }
 
-        [HttpPost("upload-file")]
-        public async Task<IActionResult> UploadFile(IFormFile file)
+        [HttpPost("upload-pfp")]
+        [Authorize]
+        public async Task<IActionResult> UploadPFP(IFormFile file)
         {
             await using var memoryStream = new MemoryStream();
             await file.CopyToAsync( memoryStream );
@@ -46,8 +54,13 @@ namespace fightnight.Server.Controllers
 
             Console.WriteLine( objName );
 
-            // add url of saved file into event Db
+            var email = User.GetEmail();
+            var user = await _userManager.FindByEmailAsync(email);
 
+            user.ProfilePicture = objName;
+            await _userManager.UpdateAsync(user);
+
+            // pfp has been updated
             return Ok( result );
         }
     }

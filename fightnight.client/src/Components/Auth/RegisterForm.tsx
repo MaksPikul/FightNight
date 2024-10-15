@@ -24,13 +24,16 @@ import { PasswordChecks } from "./PasswordChecks"
 import { RegisterSchema } from "../../Schemas"
 
 import { useAuth } from "../../Context/UseAuth"
+import { useParams } from "react-router-dom"
 
 export const RegisterForm = () => {
 
     const [error, setError] = useState<string | undefined>()
     const [success, setSuccess] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
+
     const { registerUser } = useAuth()
+    const { inviteId } = useParams()
 
     const form = useForm<z.infer<typeof RegisterSchema>>({
         resolver: zodResolver(RegisterSchema),
@@ -50,7 +53,9 @@ export const RegisterForm = () => {
         const res = await registerUser(
             values.email,
             values.name,
-            values.password)
+            values.password,
+            inviteId
+        )
         setLoading(false)
 
         setError(res?.error)

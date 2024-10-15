@@ -2,12 +2,13 @@ import { create } from "zustand"
 import { Message } from "../Models/Message";
 
 export type ModalType = "signOut" | "CreateEvent" | "ConfirmDeleteEvent"
-    | "UploadBanner" | "ConfirmDeleteMessage" | "InviteMember"
+    | "UploadBanner" | "ConfirmDeleteMessage" | "InviteMember" | "ConfirmRemoveMember"
 
 interface ModalData {
     eventTitle?: string
     eventId?: string
     message?: Message
+    Member?: any
 }
 
 interface ModalStore {

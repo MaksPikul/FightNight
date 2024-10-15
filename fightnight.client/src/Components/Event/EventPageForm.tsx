@@ -122,15 +122,7 @@ export const EventPageForm = ({
                                 </FormItem>
                             )} />
 
-                        {/* 
-                    <Button
-                    type="button"
-                    onClick={() => {
-                        onOpen("UploadBanner", { eventTitle: event?.title, eventId: event?.id })
-                    }}>
-                    Upload use pfp (to be reused)
-                    </Button>
-                    */}
+                        
                     </div>
 
 

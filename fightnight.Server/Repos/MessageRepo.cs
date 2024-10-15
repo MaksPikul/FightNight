@@ -37,11 +37,13 @@ namespace fightnight.Server.Repos
             return await _context.Message.FindAsync(msgId);
         }
 
-        public async Task<List<ReturnMessageDto>> GetMessagesAsync(string eventId)
+        public async Task<List<ReturnMessageDto>> GetMessagesAsync(string eventId ,int offset, int limit)
         {
             return await _context.Message
                 .Where(e => e.eventId == eventId)
                 .OrderBy(m => m.timeStamp)
+                .Skip(offset)
+                .Take(limit)
                 .Select(m => m.ReturnMessageMapper())
                 .ToListAsync();
 

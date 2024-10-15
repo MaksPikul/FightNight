@@ -37,14 +37,16 @@ export const ChangeUserPassword = async (
 export const LoginApi = async (
     email: string,
     password: string,
-    rememberMe: boolean
+    rememberMe: boolean,
+    inviteId: string | undefined
 ) => {
     try {
         const data = await
             axios.post<UserProfileToken>(api + "account/login", {
                 email,
                 password,
-                rememberMe
+                rememberMe,
+                inviteId
             }, {
                 withCredentials: true
             });
@@ -78,14 +80,16 @@ export const PingApi = async () => {
 export const RegisterApi = async (
     email: string,
     username: string,
-    password: string
+    password: string,
+    inviteId: string | undefined
 ) => {
     try {
         const data = await
             axios.post<UserProfile>(api + "account/register", {
                 username:username,
                 email:email,
-                password:password
+                password: password,
+                inviteId
             });
         return data
     }

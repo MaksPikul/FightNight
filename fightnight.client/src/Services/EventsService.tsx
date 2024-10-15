@@ -73,25 +73,3 @@ export const DeleteEventApi = async (
     return x
 }
 
-export const UploadEventBanner = async (
-    file: File,
-    eventId: string
-) => {
-    try {
-        const data = await axios.patch(api + 'event/banner',
-            {
-                file,
-                eventId
-            },
-            {
-                withCredentials: true,
-                headers: {
-                    "Content-Type": "multipart/form-data", // Ensure that the request is sent as multipart/form-data
-                }
-            })
-        return data
-    }
-    catch (err) {
-        return err
-    }
-}

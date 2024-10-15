@@ -9,7 +9,7 @@ import { ChatMessages } from "./Messages/ChatMessages"
 import { ChatNav } from "./ChatNav"
 import { HubConnection, HubConnectionBuilder , LogLevel} from '@microsoft/signalr'
 import { useEffect, useState } from "react"
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AddMessageApi, DeleteMessageApi, GetEventMessagesApi, UpdateMessageApi } from "../../../Services/MessageService"
 
 
@@ -30,10 +30,15 @@ export const EventChat = ({
     const { user } = useAuth()
     const queryClient = useQueryClient()
 
-    const { isPending, error, data: messages, status } = useQuery({
+    const getMsgs = useQuery({
         queryKey: ["Messages", eventId],
-        queryFn: () => GetEventMessagesApi(eventId)
+        queryFn: ( ) => GetEventMessagesApi(eventId, 0),
+        /*
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, pages) => LA,
+        */
     })
+    
 
     const addMsgMutation = useMutation({
         mutationFn: (
@@ -69,8 +74,6 @@ export const EventChat = ({
                     (oldMsgs: Message[]) => {
                     return [...oldMsgs, newMsg]
                 })
-                
-                console.log(newMsg)
 
             });
             connection.on("EditMsgRes", (message) => {
@@ -82,8 +85,6 @@ export const EventChat = ({
                             return oldMsg.id === message.id ? message : oldMsg
                         })
                     })
-
-                console.log(message)
             });
             connection.on("DeleteMsgRes", (messageId) => {
 
@@ -114,20 +115,19 @@ export const EventChat = ({
         
     }, [connection])
 
-
-
-
-    if (isPending) return 'Loading...'
-
-    if (error) return error.message
     
-    if (status === "success") 
+
+    if (getMsgs.isPending) return 'Loading...'
+
+    if (getMsgs.error) return getMsgs.error.message
+    
+    if (getMsgs.status === "success") 
         return (
             <Card className="flex flex-col bg-red-800 h-[700px] w-[700px] p-2 gap-y-2">
                 {/*<ChatNav />*/}
                 <ChatMessages
-                    addMsgMutation={addMsgMutation}
-                    messages={messages}/>
+                    getMsgs={getMsgs}
+                    addMsgMutation={addMsgMutation}/>
                 <ChatInput
                     mutate={addMsgMutation.mutate}/>
             </Card>

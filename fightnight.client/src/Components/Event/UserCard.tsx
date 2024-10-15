@@ -20,8 +20,8 @@ export const UserCard = ({
 }: UserCardProps) => {
     const { user } = useAuth()
     
-    const isAdmin = userProfile.role === EventRole.Admin
-    const ownProfile = userProfile.userId === user?.userId;
+    const isAdmin = userProfile.Role === EventRole.Admin
+    const ownProfile = userProfile.Id === user?.userId;
     
 
     return (
@@ -31,11 +31,11 @@ export const UserCard = ({
                         <AvatarImage  src="https://github.com/shadcn.png" alt="@shadcn" />
                         <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
-                    {user?.username}
+                    {userProfile?.Username}
             </ContextMenuTrigger>
 
             <ContextMenuContent>
-                <ContextMenuItem> <Badge> {userProfile.role } </Badge> </ContextMenuItem>
+                <ContextMenuItem> <Badge> {userProfile.Role } </Badge> </ContextMenuItem>
                 {(isAdmin && !ownProfile) && <ContextMenuItem className="text-red-600"> Remove From Event </ContextMenuItem>}
             </ContextMenuContent>
         </ContextMenu>

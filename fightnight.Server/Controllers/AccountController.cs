@@ -2,6 +2,7 @@
 using fightnight.Server.Dtos;
 using fightnight.Server.Dtos.Account;
 using fightnight.Server.Enums;
+using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models.Tables;
 using fightnight.Server.Services;
@@ -20,6 +21,8 @@ namespace fightnight.Server.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly ITokenService _tokenService;
+        private readonly IInviteRepo _inviteRepo;
+        private readonly IMemberRepo _memberRepo;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IGoogleTokenService _googleTokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -29,6 +32,7 @@ namespace fightnight.Server.Controllers
         public AccountController(
             UserManager<AppUser> userManager, 
             ITokenService tokenService, 
+            IInviteRepo inviteRepo,
             SignInManager<AppUser> signInManager, 
             IGoogleTokenService googleTokenService,
             IHttpContextAccessor httpContextAccessor,
@@ -42,6 +46,7 @@ namespace fightnight.Server.Controllers
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
             _context = context;
+            _inviteRepo = inviteRepo;
         }
 
 
@@ -66,6 +71,26 @@ namespace fightnight.Server.Controllers
                     UserName = registerDto.Username,
                     Email = registerDto.Email,
                 };
+
+                if (registerDto.inviteId != null)
+                {
+                    Invitation invite = await _inviteRepo.GetInvitationAsync(registerDto.inviteId);
+                    if (invite != null)
+                    {
+                        Response.Redirect("https://localhost:5173/" + invite.eventId + "/team");
+
+                        var AppUserEvent = new AppUserEvent
+                        {
+                            EventId = invite.eventId,
+                            AppUserId = appUser.Id,
+                            Role = EventRole.Moderator,
+                        };
+                        await _memberRepo.AddMemberToEventAsync(AppUserEvent);
+
+                        appUser.EmailConfirmed = true;
+                    }
+                }
+                
                 var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password);
 
                 if (createdUser.Succeeded)
@@ -73,45 +98,43 @@ namespace fightnight.Server.Controllers
                     var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
                     if (roleResult.Succeeded)
                     {
-                        //this will need to be changed to use redis or sum
-
-                        /*
-                         Random random = new Random();
-                        int randomNumber = random.Next(100000, 1000000); // Generates a number between 100000 and 999999
-                        string token = randomNumber.ToString();
-                         */
-
-                        string token = Guid.NewGuid().ToString();
-                        DateTime expiry = DateTime.Now.AddMinutes(5);
-
-                        var existingToken = await _context.UserToken.FirstOrDefaultAsync(x => x.userId == appUser.Id);
-                        if (existingToken != null)
+                        if (!appUser.EmailConfirmed)
                         {
-                            return BadRequest("A confirmation email has already been sent");
+                            string token = Guid.NewGuid().ToString();
+                            DateTime expiry = DateTime.Now.AddMinutes(5);
+
+                            var existingToken = await _context.UserToken.FirstOrDefaultAsync(x => x.userId == appUser.Id);
+                            if (existingToken != null)
+                            {
+                                return BadRequest("A confirmation email has already been sent");
+                            }
+
+                            var userToken = new UserToken
+                            {
+                                userId = appUser.Id,
+                                //userEmail = appUser.Email,
+                                token = token,
+                                expiry = expiry,
+                                //tokenType = TokenType.verify
+                            };
+
+                            var createdEntry = _context.UserToken.AddAsync(userToken);
+                            await _context.SaveChangesAsync();
+
+                            string emailVerifyLink = "https://localhost:5173/verify-email?token=" + token + "&email=" + registerDto.Email;
+
+                            var email = new ConfirmEmailTemplate
+                            {
+                                SendingTo = registerDto.Email,
+                                EmailBody = "<p>Click <a href=" + emailVerifyLink
+                                + ">Here</a> to verify your email.</p>"
+                            };
+                            await _emailService.Send(email);
+
+                            return Ok("A Confirmation Email has been sent.");
                         }
 
-                        var userToken = new UserToken
-                        {
-                            userId = appUser.Id,
-                            //userEmail = appUser.Email,
-                            token = token,
-                            expiry = expiry,
-                            //tokenType = TokenType.verify
-                        };
-
-                        var createdEntry = _context.UserToken.AddAsync(userToken);
-                        await _context.SaveChangesAsync();
-
-                        string emailVerifyLink = "https://localhost:5173/verify-email?token=" + token + "&email=" + registerDto.Email;
-
-                        var email = new ConfirmEmailTemplate {
-                            SendingTo = registerDto.Email,
-                            EmailBody = "<p>Click <a href=" + emailVerifyLink 
-                            + ">Here</a> to verify your email.</p>"
-                        };
-                        await _emailService.Send(email);
-
-                        return Ok("A Confirmation Email has been sent.");
+                        return Ok("Registered with invite, account made and email confirmed");
                     }
                     else
                     {
@@ -166,17 +189,18 @@ namespace fightnight.Server.Controllers
         [HttpGet("ping")]
         public IActionResult pingAuth()
         {
-            var isAuthed = User.Identity.IsAuthenticated;
+            bool isAuthed = User.Identity.IsAuthenticated;
             
             if (isAuthed)
             {
                 // get user info
-                return Ok(new {
+                return Ok(new NewUserDto
+                {
                     userId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                     userName = User.Identity.Name, 
                     email = User.FindFirstValue(ClaimTypes.Email),
-                    //picture
-                    isAuthed, 
+                    picture = "edit claims type to have pfps", //User.FindFirstValue(ClaimTypes.Picture),
+                    isAuthed = isAuthed, 
                     role = User.FindFirstValue(ClaimTypes.Role)
                 });
             }
@@ -188,7 +212,7 @@ namespace fightnight.Server.Controllers
         {
             await _signInManager.SignOutAsync();
 
-            //return Ok("Signed out");
+            Response.Redirect("https://localhost:5173/");
         }
 
         [HttpPost("login")]
@@ -200,7 +224,8 @@ namespace fightnight.Server.Controllers
             if (user == null){
                 return Unauthorized("Email not found");
             }
-            else if (!user.EmailConfirmed){
+            if (!user.EmailConfirmed)
+            {
                 return Unauthorized("Confirm Your Email before logging in");
             }
 
@@ -213,13 +238,35 @@ namespace fightnight.Server.Controllers
                 return Unauthorized("Invalid Credentials");
             }
 
+            //if invite param exists,
+            //1. find invite to confirm
+
+            Response.Redirect("https://localhost:5173/home");
+
+            if (loginDto.inviteId != null)
+            {
+                Invitation invite = await _inviteRepo.GetInvitationAsync(loginDto.inviteId);
+                if (invite != null)
+                {
+                    var AppUserEvent = new AppUserEvent
+                    {
+                        EventId = invite.eventId,
+                        AppUserId = user.Id,
+                        Role = EventRole.Moderator,
+                    };
+                    await _memberRepo.AddMemberToEventAsync(AppUserEvent);
+
+                    Response.Redirect("https://localhost:5173/" + invite.eventId + "/team");
+                }
+            }
+
             return Ok(
                 new NewUserDto
                 {
                     userId = user.Id,
                     userName = user.UserName,
                     email = user.Email,
-                    // picture
+                    picture = user.Picture,
                     isAuthed = true,
                     role = User.FindFirstValue(ClaimTypes.Role)
                 }
@@ -249,7 +296,7 @@ namespace fightnight.Server.Controllers
                 {
                     UserName = userName,
                     Email = userEmail,
-                    //Picture = userPicture
+                    Picture = userPicture
                 };
                 var createdUser = await _userManager.CreateAsync(appUser);
                 var roleResult = await _userManager.AddToRoleAsync(appUser, "User");

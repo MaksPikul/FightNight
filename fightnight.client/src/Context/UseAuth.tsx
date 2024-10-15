@@ -8,12 +8,14 @@ type UserContextType = {
     registerUser: (
         username: string,
         email: string,
-        password: string
+        password: string,
+        inviteId: string | undefined
     ) => void,
     loginUser: (
         email: string,
         password: string,
-        rememberMe: boolean
+        rememberMe: boolean,
+        inviteId: string | undefined
     ) => void,
     logout: () => void,
     isLoggedIn: () => boolean | undefined
@@ -28,7 +30,7 @@ const UserContext =
 
 export const UserProvider = ({ children }: Props) => {
     const navigate = useNavigate();
-    const [user, setUser] = useState<UserProfile | null>(null);
+    const [user, setUser] = useState<UserProfile | null | boolean>(null);
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
@@ -48,8 +50,9 @@ export const UserProvider = ({ children }: Props) => {
         email: string,
         username: string,
         password: string,
+        inviteId: string | undefined
      ) => {
-        const res = await RegisterApi(email, username, password)
+        const res = await RegisterApi(email, username, password, inviteId)
         if (res?.data) {
             // remove later with email verification
             //This should be in verify user
@@ -68,12 +71,13 @@ export const UserProvider = ({ children }: Props) => {
     const loginUser = async (
         email: string,
         password: string,
-        rememberMe: boolean
+        rememberMe: boolean,
+        inviteId: string | undefined
     ) => {
-        const res = await LoginApi(email, password, rememberMe)
+        const res = await LoginApi(email, password, rememberMe, inviteId)
         if (res?.data) {
             setUser(res?.data)
-            navigate("/home");
+            //navigate("/home");
         }
         else if(res?.response){
             return res.response.data

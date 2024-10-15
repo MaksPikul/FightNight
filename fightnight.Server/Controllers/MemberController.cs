@@ -17,6 +17,7 @@ using FluentEmail.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks.Dataflow;
 
@@ -59,7 +60,7 @@ namespace fightnight.Server.Controllers
         - Logged out, takes you to register, once registered, redirects to invite page, once accepted, recirects to event page
          */
 
-
+        //upon clicking invite links, redirected to a page, this page then redirects them to valid pages based on status
        
         [HttpPost("invite")]
         [Authorize]
@@ -116,7 +117,7 @@ namespace fightnight.Server.Controllers
 
         // user clicks link in email or clicks Accept in home page, redirect to invite page, user clicks JOIN 
         [HttpPost("join-w-invite")]
-        public async Task<IActionResult> JoinWithLink([FromBody] string inviteId)
+        public async Task<IActionResult> JoinWithInvite([FromBody] string inviteId)
         {
             var invite = await _inviteRepo.GetInvitationAsync(inviteId);
             if (invite == null) return NotFound("Invitation not found");
@@ -149,7 +150,7 @@ namespace fightnight.Server.Controllers
 
         // user clicks shared link
         [HttpPost("join-w-share")]
-        public async Task<IActionResult> JoinWithCode([FromBody] string eventJoinCode)
+        public async Task<IActionResult> JoinWithSharedLink([FromBody] string eventJoinCode)
         {
             var eventVar = await _eventRepo.GetEventWithJoinCodeAsync(eventJoinCode);
             if (eventVar == null) return NotFound("Event with this join code doesn't exist");
@@ -174,49 +175,6 @@ namespace fightnight.Server.Controllers
             return Redirect("https://localhost:5173/event/" + eventVar.id + "/team");
         }
 
-        [HttpPost("join")]
-        [Authorize]
-        public async Task<IActionResult> AddMemberToEvent([FromBody] NewMemberDto newMemberDto)
-        {
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
-            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, newMemberDto.eventId);
-
-            if (!ueRole.Equals(EventRole.Admin))
-            {
-                return Unauthorized("You are unauthorized to complete this action");
-            }
-
-            // may not need this ---
-            var existingUser = _userManager.FindByIdAsync(newMemberDto.newMemberId);
-            if (existingUser == null)
-            {
-                return BadRequest("User Does not exist");
-            }
-            // ---------------------
-
-            var exisitngUserInTeam = _context.AppUserEvent.FirstOrDefault(ue => 
-                ue.AppUserId == newMemberDto.newMemberId 
-                && 
-                ue.EventId == newMemberDto.eventId
-            );
-            if (exisitngUserInTeam == null)
-            {
-                return BadRequest("User already added to event");
-            }
-            var AppUserEvent = new AppUserEvent
-            {
-                EventId = newMemberDto.newMemberId,
-                AppUserId = newMemberDto.eventId,
-                Role = newMemberDto.newRole,
-            };
-
-            var result = await _memberRepo.AddMemberToEventAsync(AppUserEvent);
-            if (AppUserEvent == null) return StatusCode(500, "Could not add AppUserEvent to DB");
-
-            return Ok("");
-        }
-
         [HttpDelete]
         [Authorize]
         public async Task<IActionResult> RemoveMemberFromEvent([FromBody] RemoveMemberBody mbrBody)
@@ -239,12 +197,17 @@ namespace fightnight.Server.Controllers
             }
 
             await _memberRepo.RemoveMemberFromEventAsync(member);
+
+            /*
+            await _hubContext.Clients.Client(connectionId).SendAsync("ForceDisconnectReq");
+            */
+
             return Ok(member.AppUser.UserName + " Has been removed from event");
         }
 
-        [HttpGet]
+        [HttpGet("{eventId}")]
         [Authorize]
-        public async Task<IActionResult> GetEventMembers([FromBody] string eventId)
+        public async Task<IActionResult> GetEventMembers([FromRoute] string eventId)
         {
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);

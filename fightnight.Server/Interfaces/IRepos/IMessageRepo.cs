@@ -8,7 +8,7 @@ namespace fightnight.Server.Interfaces.IRepos
         //might need to be TResult
         Task<Message> CreateMessageAsync(Message msg);
         Task<Message> DeleteMessageAsync(Message msg); //Message msg);
-        Task<List<ReturnMessageDto>> GetMessagesAsync(string eventId); //+, string userId); or , string groupId)
+        Task<List<ReturnMessageDto>> GetMessagesAsync(string eventId, int offset , int limit); //+, string userId); or , string groupId)
         Task<Message> UpdateMessageAsync(Message msg);
         Task<Message> GetMessageAsync(string msgId);
 

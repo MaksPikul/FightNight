@@ -56,7 +56,6 @@ export const EventPage = () => {
         status,
         error,
         data: event,
-        isFetching
     } = useQuery({
         queryFn: () => GetEventAndUsers(eventId),
         queryKey: ['Event', eventId],

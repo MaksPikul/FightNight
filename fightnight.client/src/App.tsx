@@ -11,6 +11,7 @@ import { EventLayout } from './Components/Event/EventLayout';
 import { VerifyEmail } from './Components/Auth/VerifyEmail';
 import { ResetPassword } from './Components/Auth/ResetPassword';
 import { ForgotPassword } from './Components/Auth/ForgotPassword';
+import { InvitePage } from './Components/Public/InivtePage';
 
 function App() {
 
@@ -24,12 +25,12 @@ function App() {
         isLoggedIn() === undefined ? <div>loading</div>
         :
         <Routes>
-                {/*<Route path="/eventInvite/:inviteId/:email" element={"Invite Page"} />*/}
+            <Route path="/eventInvite/:inviteId?/:inviteCode?" element={<InvitePage />} />
 
             <Route element={<PublicViews />}>
                 <Route path="/" element={<div>landing page</div>} /> 
-                <Route path="/login" element={<LoginForm />} /> 
-                <Route path="/register" element={<RegisterForm />} /> 
+                <Route path="/login/:inviteId?" element={<LoginForm />} /> 
+                <Route path="/register/:inviteId?" element={<RegisterForm />} /> 
                 <Route path="/verify-email/:token" element={<VerifyEmail />} />
                 <Route path="/forgot-password/" element={<ForgotPassword />} />
                 <Route path="/reset-password/:token" element={<ResetPassword />} />

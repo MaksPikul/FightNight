@@ -2,14 +2,26 @@ import { EventRole } from "../Models/Event";
 
 const api = "https://localhost:7161/api/"
 
-export const AddMemberToEvent = async (
+export const AcceptInvite = async (
+    inviteId: string
+) => {
+    const res = await fetch(api + "join-w-invite",
+        {
+            body: JSON.stringify({inviteId}),
+            method: "post",
+        })
+
+    return await res.json()
+}
+
+export const AddThroughInvite = async (
     userId: string,
     allocatedRole: EventRole.Fighter | EventRole.Moderator | EventRole.Spectator,
     eventId: string
 ) => {
     fetch(api + "member",
         {
-            body: JSON.stringify({userId, eventId, allocatedRole}),
+            body: JSON.stringify({ userId, eventId, allocatedRole }),
             method: "post",
             credentials: "include"
         }).then((res) => res.json())
@@ -46,11 +58,11 @@ export const RemoveMemberFromEvent = async (
 export const GetEventMembers = async (
     eventId: string
 ) => {
-    fetch(api + "member",
+    const res = await fetch(api + "member/" + eventId,
         {
-            body: JSON.stringify({ eventId }),
             method: "get",
             credentials: "include"
-        }).then((res) => res.json())
+        })
+    return await res.json()
 }
 

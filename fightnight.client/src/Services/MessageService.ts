@@ -16,7 +16,6 @@ export const AddMessageApi = async (
             credentials: "include"
         })
     const x = await res.json()
-    console.log(x)
     return x
 }
 
@@ -54,8 +53,10 @@ export const UpdateMessageApi = async (
 
 export const GetEventMessagesApi = async (
     eventId: string,
+    offset: number,
 ) => {
-    const res = await fetch(api + `message/${eventId}`,
+    const limit = 50
+    const res = await fetch(api + `message/${eventId}/${offset}/${limit}`,
         {
             //body: JSON.stringify({ eventId }),
             method: "get",

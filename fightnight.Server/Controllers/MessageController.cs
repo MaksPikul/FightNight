@@ -82,9 +82,9 @@ namespace fightnight.Server.Controllers
             }
         }
 
-        [HttpGet("{eventId}")]
+        [HttpGet("{eventId}/{offset}/{limit}")]
         [Authorize]
-        public async Task<IActionResult> GetEventMessages([FromRoute] string eventId)
+        public async Task<IActionResult> GetEventMessages([FromRoute] string eventId, int offset=0, int limit=50)
         {
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
@@ -94,7 +94,7 @@ namespace fightnight.Server.Controllers
             if (result)
             {
                 //check redis
-                var messages =  await _messageRepo.GetMessagesAsync(eventId);
+                var messages =  await _messageRepo.GetMessagesAsync(eventId, offset, limit);
                 //if (messages == null) { return BadRequest("No Events to display"); }
                 return Ok(messages);
             }
@@ -124,7 +124,7 @@ namespace fightnight.Server.Controllers
 
             await _hubContext.Clients
                     .Group(msgBody.eventId)
-                    .SendAsync("EditMsgRes", msgBody);
+                    .SendAsync("EditMsgRes", message);
 
             return Ok("Message Edited");
         }

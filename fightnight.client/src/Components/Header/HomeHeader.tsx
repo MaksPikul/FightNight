@@ -2,16 +2,13 @@
 import { LogOut, Settings } from "lucide-react"
 //import { ModeToggle } from "./mode-toggle"
 import { Button } from "../ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet"
 import { useModal } from "../../Hooks/use-modal-store"
-import { useNavigate, useParams } from "react-router-dom"
 import { Card } from "../ui/card"
+import { UserSideNav } from "../Profile/UserSideNav"
 
 export const HomeHeader = () => {
 
     const { onOpen } = useModal()
-    const { eventId } = useParams()
-    const navigate = useNavigate()
 
     return (
         <Card
@@ -22,22 +19,8 @@ className="flex flex-row"            >
                 
         </div>
             <nav>
-                <Sheet>
-                    <SheetTrigger
-                    asChild>
-                    <Button
-                    onClick={()=>null}
-                    variant="ghost">
-                        <Settings />
-                    </Button>
-                    </SheetTrigger>
-                    <SheetContent>
-                        <SheetHeader>
-                            <SheetTitle>Account & Settings</SheetTitle>
-                        </SheetHeader>
+                <UserSideNav />
 
-                    </SheetContent>
-                </Sheet>
                 {/*<ModeToggle />*/}
 
                 <Button

@@ -24,15 +24,18 @@ import { FormSuccess } from "../Misc/formSuccess"
 import { getGoogleOAuthURL } from "../../Services/AuthService"
 import { useAuth } from "../../Context/UseAuth"
 import { Checkbox } from "../ui/checkbox"
+import { useParams } from "react-router-dom"
 //import { useNavigate } from "react-router-dom"
 
 export const LoginForm = () => {
 
     const [error, setError] = useState<string | undefined>("")
     const [success, setSuccess] = useState<string | undefined>("")
+
     const [isPending, startTransition] = useTransition()
     const { loginUser } = useAuth()
-    //const navigate = useNavigate();
+    const { inviteId } = useParams()
+
 
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
@@ -50,7 +53,9 @@ export const LoginForm = () => {
         const errMsg = await loginUser(
             values.email,
             values.password,
-            values.rememberMe)
+            values.rememberMe,
+            inviteId
+        )
         setError(errMsg)
     }
 

@@ -6,6 +6,7 @@ import { ConfirmDeleteEventModal } from "../Components/Modals/ConfirmDeleteEvent
 import { UploadBannerModal } from "../Components/Modals/UploadBannerModal";
 import { ConfirmDeleteMessageModal } from "../Components/Modals/ConfirmDeleteMessage";
 import { InviteMemberModal } from "../Components/Modals/InviteMemberModal";
+import { ConfirmRemoveMemberModal } from "../Components/Modals/ConfirmRemoveMember";
 
 export const ModalProvider = () => {
     const [isMounted, setIsMounted] = useState(false);
@@ -20,6 +21,7 @@ export const ModalProvider = () => {
 
     return (
         <>
+            <ConfirmRemoveMemberModal />
             <InviteMemberModal />
             <SignOutModal />
             <CreateEventModal />

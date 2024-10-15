@@ -4,24 +4,29 @@ import { Separator } from "../ui/separator"
 import { UserCard } from "./UserCard";
 import { UserEventProfile } from "../../Models/User";
 import { UserGroup } from "./UserGroup";
+import { useQuery } from "@tanstack/react-query";
+import { GetEventMembers } from "../../Services/MemberService";
 
-export const EventMembers = () => {
-    const users = [
-        { id: 1, username: 'Alice', type: 'admin', role: 3 },
-        { id: 2, username: 'Bob', type: 'guest', role: 3 },
-        { id: 3, username: 'Charlie', type: 'member', role: 3 },
-        { id: 5, username: 'Eve', type: 'guest', role: 3 },
-        { id: 5, username: 'Eve', type: 'guest', role: 3 },
-        { id: 5, username: 'Eve', type: 'guest', role: 3 },
-        { id: 5, username: 'Eve', type: 'guest', role: 3 },
-        { id: 6, username: 'Frank', type: 'member',role:3 },
-    ];
 
-    const groupedUsers = users.reduce((acc, user) => {
-        if (!acc[user.type]) {
-            acc[user.type] = [];
+interface EventMembersProps {
+    eventId: string | undefined
+}
+
+export const EventMembers = ({
+    eventId
+}:EventMembersProps) => {
+
+
+    const GetMembers = useQuery({
+        queryKey: ["Members", eventId],
+        queryFn: ()=> GetEventMembers(eventId)
+    })
+
+    const groupedUsers = GetMembers.data.reduce((acc, user) => {
+        if (!acc[user.Role]) {
+            acc[user.Role] = [];
         }
-        acc[user.type].push(user);
+        acc[user.Role].push(user);
         return acc;
     }, {});
     
