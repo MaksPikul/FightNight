@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using fightnight.Server.Data;
 
@@ -11,9 +12,11 @@ using fightnight.Server.Data;
 namespace fightnight.Server.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20241016174141_addProfilePic")]
+    partial class addProfilePic
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,13 +54,13 @@ namespace fightnight.Server.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "10122251-794a-4e47-afd7-7645bf530a11",
+                            Id = "3f890456-6ef5-4884-ba48-07eded1dbcf3",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "da871ad6-1518-4527-b891-e1370183499d",
+                            Id = "5a899a49-786f-4d73-99e7-55610108f3e4",
                             Name = "user",
                             NormalizedName = "USER"
                         });
@@ -380,10 +383,6 @@ namespace fightnight.Server.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("picture")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

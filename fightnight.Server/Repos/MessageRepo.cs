@@ -4,6 +4,7 @@ using fightnight.Server.Dtos.Message;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Mappers;
+using fightnight.Server.Migrations;
 using fightnight.Server.Models.Tables;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,14 +40,16 @@ namespace fightnight.Server.Repos
 
         public async Task<List<ReturnMessageDto>> GetMessagesAsync(string eventId ,int offset, int limit)
         {
-            return await _context.Message
+             return await _context.Message
                 .Where(e => e.eventId == eventId)
-                .OrderBy(m => m.timeStamp)
-                .Skip(offset)
+                .OrderByDescending(m => m.timeStamp)
+                .Skip(offset*limit)
                 .Take(limit)
                 .Select(m => m.ReturnMessageMapper())
+                .Reverse()
                 .ToListAsync();
 
+            
             //return messages.OrderBy(m => m.timeStamp);
         }   
 

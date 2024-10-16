@@ -212,8 +212,8 @@ namespace fightnight.Server.Controllers
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
 
-            var result = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventId);
-            if (result) return Unauthorized("Unauthorized, not a member of event.");
+            var boolResult = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventId);
+            if (!boolResult) return Unauthorized("Unauthorized, not a member of event.");
 
             var members = await _memberRepo.GetEventMembersAsync(eventId);
             return Ok(members);

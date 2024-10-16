@@ -59,7 +59,7 @@ namespace fightnight.Server.Controllers
                     message = msgBody.msg,
                     userId = appUser.Id,
                     username = msgBody.username,
-                    //userPicture = msg.userPicture,
+                    //picture = msg.picture,
                     eventId = msgBody.eventId
                 };
                 var x = await _messageRepo.CreateMessageAsync(newMsg);

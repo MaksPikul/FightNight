@@ -12,7 +12,7 @@ namespace fightnight.Server.Mappers
                 id = msgModel.id,
                 userId = msgModel.userId,
                 username = msgModel.username,
-                //userPicture = msgModel.userPicture,
+                picture = msgModel.picture,
                 eventId = msgModel.eventId,
                 message = msgModel.message,
                 IsEdited = msgModel.IsEdited,

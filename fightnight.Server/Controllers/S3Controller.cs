@@ -57,7 +57,7 @@ namespace fightnight.Server.Controllers
             var email = User.GetEmail();
             var user = await _userManager.FindByEmailAsync(email);
 
-            user.ProfilePicture = objName;
+            user.Picture = objName;
             await _userManager.UpdateAsync(user);
 
             // pfp has been updated

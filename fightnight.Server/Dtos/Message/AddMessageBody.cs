@@ -5,6 +5,6 @@
         public string msg { get; set; }
         public string eventId { get; set; }
         public string username { get; set; }
-        public string userPicture { get; set; }
+        public string picture { get; set; }
     }
 }
