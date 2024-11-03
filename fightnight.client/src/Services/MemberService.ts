@@ -63,6 +63,8 @@ export const GetEventMembers = async (
             method: "get",
             credentials: "include"
         })
-    return await res.json()
+    const x = await res.json()
+    console.log(x)
+    return x
 }
 

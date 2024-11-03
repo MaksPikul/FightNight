@@ -31,7 +31,7 @@ namespace fightnight.Server.Repos
                         Id = eventV.AppUser.Id,
                         Username = eventV.AppUser.UserName,
                         Email = eventV.AppUser.Email,
-                        Picture = "add to column DB", //eventV.AppUser.Picture
+                        picture = eventV.AppUser.Picture,
                         Role = eventV.Role,
                     })
                 .ToListAsync();

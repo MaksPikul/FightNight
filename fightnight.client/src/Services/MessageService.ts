@@ -4,11 +4,11 @@ export const AddMessageApi = async (
     msg: string,
     eventId: string,
     username: string,
-    userPicture: string
+    picture: string
 ) => {
     const res = await fetch(api + "message",
         {
-            body: JSON.stringify({ msg, eventId, username, userPicture }),
+            body: JSON.stringify({ msg, eventId, username, picture }),
             method: "post",
             headers: {
                 'Content-Type': 'application/json'
@@ -53,15 +53,19 @@ export const UpdateMessageApi = async (
 
 export const GetEventMessagesApi = async (
     eventId: string,
-    offset: number,
+    pageParam: number,
 ) => {
-    const limit = 50
-    const res = await fetch(api + `message/${eventId}/${offset}/${limit}`,
+    const limit = 20
+    const res = await fetch(api + `message/${eventId}/${pageParam}/${limit}`,
         {
             //body: JSON.stringify({ eventId }),
             method: "get",
             credentials: "include"
         })
     const x = await res.json()
-    return x
+    return {
+        data: x,
+        currentPage: pageParam,
+        nextCursor: limit === x.length ? pageParam + 1 : null
+    }
 }

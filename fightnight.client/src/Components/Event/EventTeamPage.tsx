@@ -23,7 +23,7 @@ export const EventTeamPage = () => {
             <div className="flex flex-row ">
                 <nav className="px-3 py-2 space-y-2">
                     <EventTeamOptions eventId={eventId} />
-                    <EventMembers eventId={eventId} />
+                    <EventMembers/>
                 </nav>
                 <EventChat eventId={eventId} />
             </div>

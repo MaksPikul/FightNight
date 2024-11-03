@@ -12,6 +12,7 @@ import { useEffect, useState } from "react"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AddMessageApi, DeleteMessageApi, GetEventMessagesApi, UpdateMessageApi } from "../../../Services/MessageService"
 
+import { useInView } from "react-intersection-observer"
 
 
 
@@ -30,25 +31,38 @@ export const EventChat = ({
     const { user } = useAuth()
     const queryClient = useQueryClient()
 
+    /*
     const getMsgs = useQuery({
         queryKey: ["Messages", eventId],
         queryFn: ( ) => GetEventMessagesApi(eventId, 0),
-        /*
+        
+    })*/
+    
+
+
+    
+    const getMsgs = useInfiniteQuery({
+        queryKey: ["Messages", eventId],
+        queryFn: ({ pageParam }) => GetEventMessagesApi(eventId, pageParam),
         initialPageParam: 0,
-        getNextPageParam: (lastPage, pages) => LA,
-        */
+        getNextPageParam: (lastPage) => lastPage?.nextCursor ,
     })
+
+    
+    
     
 
     const addMsgMutation = useMutation({
         mutationFn: (
             msg: string,
-        ) => AddMessageApi(msg, eventId, user?.userName, "user?.picture"),
+        ) => AddMessageApi(msg, eventId, user?.userName, user?.picture),
         onSettled: async () => {
             
             //return await queryClient.invalidateQueries({ queryKey: ["Messages", eventId] })
         },
     })
+
+    //addMsgMutation.
 
     useEffect(() => {
         const conn = new HubConnectionBuilder()
@@ -60,7 +74,6 @@ export const EventChat = ({
     }, [])
 
     useEffect(() => {
-        console.log("re-runs")
         if (connection) {
             connection.on("ConnectionRes", (message) => {
 
@@ -71,19 +84,25 @@ export const EventChat = ({
                 
                 queryClient.setQueryData(
                     ["Messages", eventId],
-                    (oldMsgs: Message[]) => {
-                    return [...oldMsgs, newMsg]
+                    (data) => {
+                        data.pages.map((page, index) => {
+                            if (index == data.pages.length - 1) {
+                                page.data = [...page.data, newMsg]
+                            }
+                        })
+                        return data
                 })
-
+                
             });
             connection.on("EditMsgRes", (message) => {
 
                 queryClient.setQueryData(
                     ["Messages", eventId],
                     (oldMsgs: Message[]) => {
-                       return oldMsgs.map((oldMsg) => {
-                            return oldMsg.id === message.id ? message : oldMsg
-                        })
+                        
+                       //return oldMsgs.map((oldMsg) => {
+                       //     return oldMsg.id === message.id ? message : oldMsg
+                        //})
                     })
             });
             connection.on("DeleteMsgRes", (messageId) => {
@@ -92,9 +111,8 @@ export const EventChat = ({
                 queryClient.setQueryData(
                     ["Messages", eventId],
                     (oldMsgs: Message[]) => {
-                        return oldMsgs.filter((msg) => msg.id !== messageId)
+                       // return oldMsgs.filter((msg) => msg.id !== messageId)
                     })
-                console.log(messageId)
             });
             connection.start()
                 .then(() => {
@@ -126,7 +144,7 @@ export const EventChat = ({
             <Card className="flex flex-col bg-red-800 h-[700px] w-[700px] p-2 gap-y-2">
                 {/*<ChatNav />*/}
                 <ChatMessages
-                    getMsgs={getMsgs}
+                    test={getMsgs}
                     addMsgMutation={addMsgMutation}/>
                 <ChatInput
                     mutate={addMsgMutation.mutate}/>

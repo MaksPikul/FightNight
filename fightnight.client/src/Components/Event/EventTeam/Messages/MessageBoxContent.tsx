@@ -52,7 +52,7 @@ export const MessageBoxContent = ({
              <Avatar className="h-8 w-8 mr-2">
                 {!ownsAbove && 
                 <>
-                    <AvatarImage src={""} />
+                    <AvatarImage src={msg.picture} />
                     <AvatarFallback> <UserRound /> </AvatarFallback>
                 </>}
             </Avatar>
