@@ -6,6 +6,9 @@ using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models.Tables;
 using fightnight.Server.Services;
+using MetInProximityBack.Factories;
+using MetInProximityBack.Interfaces;
+using MetInProximityBack.Types;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,29 +23,32 @@ namespace fightnight.Server.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly OAuthProviderFactory _providerFactory;
         private readonly ITokenService _tokenService;
+        private readonly IOAuthService _OAuthService;
         private readonly IInviteRepo _inviteRepo;
         private readonly IMemberRepo _memberRepo;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly IGoogleTokenService _googleTokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
         private readonly AppDBContext _context;
 
         public AccountController(
-            UserManager<AppUser> userManager, 
-            ITokenService tokenService, 
+            UserManager<AppUser> userManager,
+            OAuthProviderFactory providerFactory,
+            ITokenService tokenService,
+            IOAuthService OAuthService,
             IInviteRepo inviteRepo,
             SignInManager<AppUser> signInManager, 
-            IGoogleTokenService googleTokenService,
             IHttpContextAccessor httpContextAccessor,
             IEmailService emailService,
             AppDBContext context)
         {
             _userManager = userManager;
-            _tokenService = tokenService;   
+            _providerFactory = providerFactory;
+            _tokenService = tokenService;
+            _OAuthService = OAuthService;
             _signInManager = signInManager;
-            _googleTokenService = googleTokenService;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
             _context = context;
@@ -273,38 +279,40 @@ namespace fightnight.Server.Controllers
             );
         }
 
-        [HttpGet("oauth/google")]
-        public async Task<IActionResult> OAuthGoogle([FromQuery(Name = "code")] string code)
+        [HttpPost("oauth/{provider}")]
+        public async Task<IActionResult> Authenticate(
+            [FromQuery(Name = "code")] string code,
+            [FromRoute] string provider
+        )
         {
-            var tokens = await _googleTokenService.getGoogleOAuthTokens(code);
-            var googleUser = _tokenService.DecodeToken(tokens.id_token);
-
-            var userVerified = googleUser.FirstOrDefault(c => c.Type == "email_verified").Value;
-            if (userVerified == "false") 
+            try
             {
-                return BadRequest("Email not verified");
-            }
-            var userPicture = googleUser.FirstOrDefault(c => c.Type == "picture").Value;
-            var userEmail = googleUser.FirstOrDefault(c => c.Type == "email").Value;
-            var userName = googleUser.FirstOrDefault(c => c.Type == "name").Value;
+                IOAuthProvider OAuthProvider = _providerFactory.GetProvider(provider);
 
-            var appUser = await _userManager.FindByEmailAsync(userEmail);
+                OAuthTokenResponse tokens = await _OAuthService.GetOAuthTokens(OAuthProvider.TokenUrl, OAuthProvider.GetReqValues(code));
 
-            if (appUser == null)
-            {
-                appUser = new AppUser
+                IEnumerable<Claim> claims = _tokenService.DecodeToken(tokens.id_token);
+
+                OAuthUserDto user = await OAuthProvider.MapResponseToUser(claims);
+
+                if (user.IsEmailVerified != true)
                 {
-                    UserName = userName,
-                    Email = userEmail,
-                    Picture = userPicture
-                };
-                var createdUser = await _userManager.CreateAsync(appUser);
-                var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
+                    return BadRequest("Email not verified.");
+                }
+
+                AppUser appUser = await _userManager.FindByEmailAsync(user.UserEmail) ?? await CreateAppUser(user.UserName, user.UserEmail);
+
+                await _signInManager.SignInAsync(appUser, isPersistent: true);
+
+                return Ok(user.UserEmail + " " + user.UserName);
+
+                // change when android front end done 
+                //return Redirect("https://localhost:5173/home");
             }
-
-            await _signInManager.SignInAsync(appUser, true);
-
-            return Redirect("https://localhost:5173/home");
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("forgot-password")]

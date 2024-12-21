@@ -1,7 +1,7 @@
 ﻿using fightnight.Server.Models.Tables;
 using System.Security.Claims;
 
-namespace fightnight.Server.Interfaces.IServices
+namespace MetInProximityBack.Interfaces
 {
     public interface ITokenService
     {
