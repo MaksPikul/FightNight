@@ -1,7 +1,11 @@
-﻿using fightnight.Server.Data;
+﻿using Azure;
+using fightnight.Server.Data;
 using fightnight.Server.Dtos;
 using fightnight.Server.Dtos.Account;
 using fightnight.Server.Enums;
+using fightnight.Server.Extensions;
+using fightnight.Server.Factories;
+using fightnight.Server.Interfaces;
 using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models.Tables;
@@ -24,25 +28,30 @@ namespace fightnight.Server.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly OAuthProviderFactory _providerFactory;
+        private readonly AppDBContext _context;
+        private readonly SignInManager<AppUser> _signInManager;
+        private readonly IInviteService _inviteService;
         private readonly ITokenService _tokenService;
         private readonly IOAuthService _OAuthService;
         private readonly IInviteRepo _inviteRepo;
         private readonly IMemberRepo _memberRepo;
-        private readonly SignInManager<AppUser> _signInManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
-        private readonly AppDBContext _context;
+        private readonly IUserRegistrationService _userRegistrationService;
+
 
         public AccountController(
             UserManager<AppUser> userManager,
             OAuthProviderFactory providerFactory,
+            SignInManager<AppUser> signInManager,
+            AppDBContext context,
+            IInviteService inviteService,
             ITokenService tokenService,
             IOAuthService OAuthService,
             IInviteRepo inviteRepo,
-            SignInManager<AppUser> signInManager, 
             IHttpContextAccessor httpContextAccessor,
             IEmailService emailService,
-            AppDBContext context)
+            IUserRegistrationService userRegistrationService)
         {
             _userManager = userManager;
             _providerFactory = providerFactory;
@@ -52,10 +61,10 @@ namespace fightnight.Server.Controllers
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
             _context = context;
+            _inviteService = inviteService;
             _inviteRepo = inviteRepo;
+            _userRegistrationService = userRegistrationService;
         }
-
-
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
@@ -67,90 +76,13 @@ namespace fightnight.Server.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == registerDto.Email.ToLower());
-                if (user != null){
-                    return BadRequest("Email already Taken");
+                if (await _userManager.FindByEmailAsync(registerDto.Email.ToLower()) != null)
+                {
+                    return BadRequest("Email Already Taken");
                 }
 
-                var appUser = new AppUser
-                {
-                    UserName = registerDto.Username,
-                    Email = registerDto.Email,
-                };
-
-                if (registerDto.inviteId != null)
-                {
-                    Invitation invite = await _inviteRepo.GetInvitationAsync(registerDto.inviteId);
-                    if (invite != null)
-                    {
-                        Response.Redirect("https://localhost:5173/" + invite.eventId + "/team");
-
-                        var AppUserEvent = new AppUserEvent
-                        {
-                            EventId = invite.eventId,
-                            AppUserId = appUser.Id,
-                            Role = EventRole.Moderator,
-                        };
-                        await _memberRepo.AddMemberToEventAsync(AppUserEvent);
-
-                        appUser.EmailConfirmed = true;
-                    }
-                }
-                
-                var createdUser = await _userManager.CreateAsync(appUser, registerDto.Password);
-
-                if (createdUser.Succeeded)
-                {
-                    var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
-                    if (roleResult.Succeeded)
-                    {
-                        if (!appUser.EmailConfirmed)
-                        {
-                            string token = Guid.NewGuid().ToString();
-                            DateTime expiry = DateTime.Now.AddMinutes(5);
-
-                            var existingToken = await _context.UserToken.FirstOrDefaultAsync(x => x.userId == appUser.Id);
-                            if (existingToken != null)
-                            {
-                                return BadRequest("A confirmation email has already been sent");
-                            }
-
-                            var userToken = new UserToken
-                            {
-                                userId = appUser.Id,
-                                //userEmail = appUser.Email,
-                                token = token,
-                                expiry = expiry,
-                                //tokenType = TokenType.verify
-                            };
-
-                            var createdEntry = _context.UserToken.AddAsync(userToken);
-                            await _context.SaveChangesAsync();
-
-                            string emailVerifyLink = "https://localhost:5173/verify-email?token=" + token + "&email=" + registerDto.Email;
-
-                            var email = new ConfirmEmailTemplate
-                            {
-                                SendingTo = registerDto.Email,
-                                EmailBody = "<p>Click <a href=" + emailVerifyLink
-                                + ">Here</a> to verify your email.</p>"
-                            };
-                            await _emailService.Send(email);
-
-                            return Ok("A Confirmation Email has been sent.");
-                        }
-
-                        return Ok("Registered with invite, account made and email confirmed");
-                    }
-                    else
-                    {
-                        return StatusCode(500, roleResult.Errors);
-                    }
-                }
-                else
-                {
-                    return StatusCode(500, createdUser.Errors);
-                }
+                var result = await _userRegistrationService.RegisterUserAsync(registerDto, Response);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -158,39 +90,48 @@ namespace fightnight.Server.Controllers
             }
         }
 
+
         [HttpPatch("verify")]
-        public async Task<IActionResult> VerifyEmail([FromBody] string token, string email)
+        public async Task<IActionResult> VerifyEmail([FromBody] string token)
         {
-            UserToken userToken = await _context.UserToken.FirstOrDefaultAsync(x=> x.token == token && x.userEmail == email && x.tokenType.Equals(TokenType.verify));
-            if (userToken == null)
+            if (token == null)
             {
-                return BadRequest("Invalid Verification Token");
+                return BadRequest("Missing Token");
             }
-            string userId = userToken.userId;
 
-            AppUser user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            IEnumerable<Claim> claims = _tokenService.DecodeToken(token);
+
+            var exp = claims.GetClaimValue("exp");
+            if (DateTime.Parse(exp) < DateTime.Now)
+            {
+                // Send new email
+                return BadRequest("Token Expired");
+            }
             
-            _context.UserToken.Remove(userToken);
-            _context.SaveChanges();
+            var email = claims.GetClaimValue("email");
 
-            if (user == null){
+            AppUser appUser = await _userManager.FindByEmailAsync(email);
+
+
+            if (appUser == null){
                 return BadRequest("User does not Exist.");
             }
-            else if (user.EmailConfirmed){
+            else if (appUser.EmailConfirmed){
                 
                 return BadRequest("User Already Verified");
             }
-            else if (userToken.expiry < DateTime.Now){
-                return BadRequest("Token has Expired");
-            }
 
-            user.EmailConfirmed = true;
-            var result = await _userManager.UpdateAsync(user);
+            appUser.EmailConfirmed = true;
+            var result = await _userManager.UpdateAsync(appUser);
+
             if (!result.Succeeded) {
-                return BadRequest("There has been an Error Updating");
+                return BadRequest("There has been an Error Verifying User");
             }
             return Ok("Email has been Verified");
         }
+
+
+
 
         [HttpGet("ping")]
         public IActionResult pingAuth()
@@ -212,14 +153,7 @@ namespace fightnight.Server.Controllers
             }
             return Ok(new { isAuthed });
         }
-
-        [HttpPost("logout")]
-        public async Task Logout()
-        {
-            await _signInManager.SignOutAsync();
-
-            Response.Redirect("https://localhost:5173/");
-        }
+     
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
@@ -279,6 +213,13 @@ namespace fightnight.Server.Controllers
             );
         }
 
+        [HttpPost("logout")]
+        public async Task Logout()
+        {
+            await _signInManager.SignOutAsync();
+            Response.Redirect("https://localhost:5173/");
+        }
+
         [HttpPost("oauth/{provider}")]
         public async Task<IActionResult> Authenticate(
             [FromQuery(Name = "code")] string code,
@@ -300,20 +241,24 @@ namespace fightnight.Server.Controllers
                     return BadRequest("Email not verified.");
                 }
 
-                AppUser appUser = await _userManager.FindByEmailAsync(user.UserEmail) ?? await CreateAppUser(user.UserName, user.UserEmail);
+                AppUser appUser = await _userManager.FindByEmailAsync(user.UserEmail) ?? await AppUserFactory.Create(user.UserName, user.UserEmail);
 
                 await _signInManager.SignInAsync(appUser, isPersistent: true);
-
-                return Ok(user.UserEmail + " " + user.UserName);
-
-                // change when android front end done 
-                //return Redirect("https://localhost:5173/home");
+                
+                return Redirect("https://localhost:5173/home");
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
+
+
+        // ----------------------------------------------
+
+
+
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> SendForgotPasswordEmail([FromBody] string email)

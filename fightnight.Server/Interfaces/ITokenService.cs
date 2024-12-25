@@ -1,11 +1,11 @@
 ﻿using fightnight.Server.Models.Tables;
 using System.Security.Claims;
 
-namespace MetInProximityBack.Interfaces
+namespace fightnight.Server.Interfaces
 {
     public interface ITokenService
     {
-        string CreateToken(AppUser user);
+        string CreateToken(List<Claim> claims);
         IEnumerable<Claim> DecodeToken(string token);
     }
 }

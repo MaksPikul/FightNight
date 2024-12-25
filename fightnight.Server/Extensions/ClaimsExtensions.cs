@@ -14,12 +14,12 @@ namespace fightnight.Server.Extensions
             var emailClaim = user.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Name);
             return emailClaim?.Value;
         }
-        /*
-        public static string GetId(this ClaimsPrincipal user)
+
+        public static string GetClaimValue(this IEnumerable<Claim> claims, string claimType)
         {
-            var emailClaim = user.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Sid);
-            return emailClaim?.Value;
+            var claim = claims.FirstOrDefault(c => c.Type == claimType).Value;
+
+            return claim;
         }
-        */
     }
 }

@@ -1,12 +1,12 @@
 ﻿using MetInProximityBack.Interfaces;
-using MetInProximityBack.NewFolder;
+using fightnight.Server.Extensions;
 using MetInProximityBack.Types;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
-namespace MetInProximityBack.Providers
+namespace fightnight.Server.Providers.OAuthProviders
 {
     public class MicrosoftOAuthProvider : IOAuthProvider
     {
@@ -17,13 +17,13 @@ namespace MetInProximityBack.Providers
 
         public MicrosoftOAuthProvider(
             IConfiguration configuration
-        ) 
+        )
         {
             _configuration = configuration;
         }
 
         public Dictionary<string, string> GetReqValues(string code)
-        { 
+        {
             var req = new Dictionary<string, string>
             {
                 { "client_id", _configuration["Auth:Microsoft:ClientId"] },

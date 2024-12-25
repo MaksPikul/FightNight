@@ -1,4 +1,5 @@
-﻿using fightnight.Server.Interfaces;
+﻿using fightnight.Server.Builders;
+using fightnight.Server.Interfaces;
 using fightnight.Server.Models.Tables;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,11 +16,8 @@ namespace fightnight.Server.Services
             _config = config;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SigningKey"]));
         }
-        public string CreateToken(AppUser user) {
-            var claims = new List<Claim> {
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.GivenName, user.UserName)
-            };
+
+        public string CreateToken(List<Claim> claims) {
 
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
 
@@ -49,6 +47,12 @@ namespace fightnight.Server.Services
 
             return claims;
 
+        }
+
+        public void ValidateToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            //var jwt = handler.ValidateToken(token);
         }
     }
 }

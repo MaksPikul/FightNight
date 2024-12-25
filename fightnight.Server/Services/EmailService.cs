@@ -1,5 +1,6 @@
 ﻿using fightnight.Server.Interfaces.IServices;
 using FluentEmail.Core;
+using FluentEmail.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fightnight.Server.Services
@@ -12,18 +13,13 @@ namespace fightnight.Server.Services
             _fluentEmail = fluentEmail 
                 ?? throw new ArgumentNullException(nameof(fluentEmail));
         }
-        public async Task Send(ConfirmEmailTemplate emailMetaData)
+        public async Task<SendResponse> Send(Abstracts.Email emailMetaData)
         {
-            
-            await _fluentEmail
-                .To(emailMetaData.SendingTo)
-                .Subject(emailMetaData.EmailSubject)
-                .Body(emailMetaData.EmailBody, isHtml:true)
+            return await _fluentEmail
+                .To(emailMetaData.Recipient)
+                .Subject(emailMetaData.Subject)
+                .Body(emailMetaData.Body, isHtml:true)
                 .SendAsync();
-            
-
-            //Figure out how to return success and error messages
-            //return Ok(res);
         }
     }
     public class EmailSettings
@@ -34,15 +30,5 @@ namespace fightnight.Server.Services
         public int SmtpPort { get; set; }
         public string SmtpUsername { get; set; }
         public string SmtpPassword { get; set; }
-    }
-
-    public class ConfirmEmailTemplate
-    {
-        public string SendingTo { get; set; }
-        public string? EmailSubject { get; set; } = "Confirm your Fight Night Account ";
-        public string? EmailBody { get; set; } 
-        public string? EmailAttachmentPath { get; set; }
-
-        
     }
 }

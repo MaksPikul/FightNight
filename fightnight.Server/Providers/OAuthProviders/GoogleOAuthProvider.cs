@@ -3,12 +3,11 @@ using MetInProximityBack.Types;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System;
-using MetInProximityBack.Services;
 using Azure.Core;
 using System.Security.Claims;
-using MetInProximityBack.NewFolder;
+using fightnight.Server.Extensions;
 
-namespace MetInProximityBack.Providers
+namespace fightnight.Server.Providers.OAuthProviders
 {
     public class GoogleOAuthProvider : IOAuthProvider
     {
@@ -43,7 +42,7 @@ namespace MetInProximityBack.Providers
         {
             var userEmail = res.GetClaimValue("email");
             var userName = res.GetClaimValue("name");
-            var userVerified = res.GetClaimValue("email_verified"); 
+            var userVerified = res.GetClaimValue("email_verified");
 
             return new OAuthUserDto
             {
