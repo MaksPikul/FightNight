@@ -13,7 +13,7 @@ namespace MetInProximityBack.Factories
 
         public IOAuthProvider GetProvider(string providerName)
         {
-            var provider = _providers.FirstOrDefault(p => p.ProviderName.Equals(providerName));
+            IOAuthProvider provider = _providers.FirstOrDefault(p => p.ProviderName.Equals(providerName));
             if (provider == null)
             {
                 throw new ArgumentException("Unsupported Provider");

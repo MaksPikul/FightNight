@@ -14,14 +14,14 @@ using System.Security.Claims;
 
 namespace fightnight.Server.Services
 {
-    public class UserRegistrationService : IUserRegistrationService
+    public class AuthService : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly IInviteService _inviteService;
         private readonly ITokenService _tokenService;
         
-        public UserRegistrationService(
+        public AuthService(
             UserManager<AppUser> userManager,
             IEmailService emailService,
             IInviteService inviteService,
@@ -32,11 +32,9 @@ namespace fightnight.Server.Services
             _inviteService = inviteService;
             _tokenService = tokenService;
         }
-        public async Task<string> RegisterUserAsync(RegisterDto registerDto, HttpResponse response)
+
+        public async Task<AppUser> RegisterUserAsync(AppUser appUser, RegisterDto registerDto)
         {
-
-            AppUser appUser = AppUserFactory.Create(registerDto);
-
             var createResult = await _userManager.CreateAsync(appUser, registerDto.Password);
             if (!createResult.Succeeded)
             {
@@ -49,26 +47,12 @@ namespace fightnight.Server.Services
                 throw new Exception("Internal Error Adding Role to User");
             }
 
-            if (registerDto.inviteId != null)
-            {
-                _inviteService.HandleInvitation(appUser, registerDto.inviteId, response);
-                await _userManager.UpdateAsync(appUser);
-            }
+            return appUser;
+        }
 
-            if (!appUser.EmailConfirmed)
-            {
-                // Create Email
-                Email email = new RegisterConfirmEmail(registerDto.Email, _tokenService);
-
-                // Send Email
-                SendResponse emailResult = await _emailService.Send(email);
-                if (!emailResult.Successful) 
-                { 
-                    throw new Exception("Email Failed to Send, Message ID: " + emailResult.MessageId + " Errors: " + emailResult.ErrorMessages); 
-                }
-            }
-
-            return "User Registered Successfully";
+        public Task<AppUser> LogUserInAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 

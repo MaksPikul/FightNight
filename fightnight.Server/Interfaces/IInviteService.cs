@@ -4,6 +4,7 @@ namespace fightnight.Server.Interfaces
 {
     public interface IInviteService
     {
-        void HandleInvitation(AppUser appUser, string inviteId, HttpResponse response);
+        Task<Invitation> UpdateUserAsync(AppUser appUser, string inviteId, HttpResponse response);
+        Task<Invitation> AddUserToEventAsync(Invitation invite);
     }
 }

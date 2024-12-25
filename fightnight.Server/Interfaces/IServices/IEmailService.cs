@@ -7,6 +7,6 @@ namespace fightnight.Server.Interfaces.IServices
 {
     public interface IEmailService
     {
-        Task<SendResponse> Send(Email emailMetaData);
+        Task<SendResponse> SendEmail(Email email);
     }
 }

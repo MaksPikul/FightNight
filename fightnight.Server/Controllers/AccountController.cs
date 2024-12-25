@@ -1,4 +1,5 @@
 ﻿using Azure;
+using fightnight.Server.Abstracts;
 using fightnight.Server.Data;
 using fightnight.Server.Dtos;
 using fightnight.Server.Dtos.Account;
@@ -9,7 +10,7 @@ using fightnight.Server.Interfaces;
 using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models.Tables;
-using fightnight.Server.Services;
+using fightnight.Server.Providers.EmailProviders;
 using MetInProximityBack.Factories;
 using MetInProximityBack.Interfaces;
 using MetInProximityBack.Types;
@@ -30,40 +31,36 @@ namespace fightnight.Server.Controllers
         private readonly OAuthProviderFactory _providerFactory;
         private readonly AppDBContext _context;
         private readonly SignInManager<AppUser> _signInManager;
+
         private readonly IInviteService _inviteService;
         private readonly ITokenService _tokenService;
         private readonly IOAuthService _OAuthService;
-        private readonly IInviteRepo _inviteRepo;
-        private readonly IMemberRepo _memberRepo;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
-        private readonly IUserRegistrationService _userRegistrationService;
+        private readonly IAuthService _AuthService;
 
 
         public AccountController(
             UserManager<AppUser> userManager,
             OAuthProviderFactory providerFactory,
-            SignInManager<AppUser> signInManager,
             AppDBContext context,
+            SignInManager<AppUser> signInManager,
+
             IInviteService inviteService,
             ITokenService tokenService,
             IOAuthService OAuthService,
-            IInviteRepo inviteRepo,
-            IHttpContextAccessor httpContextAccessor,
-            IEmailService emailService,
-            IUserRegistrationService userRegistrationService)
+            IAuthService AuthService,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _providerFactory = providerFactory;
+            _context = context;
+            _signInManager = signInManager;
+
+            _inviteService = inviteService;
             _tokenService = tokenService;
             _OAuthService = OAuthService;
-            _signInManager = signInManager;
-            _httpContextAccessor = httpContextAccessor;
+            _AuthService = AuthService;
             _emailService = emailService;
-            _context = context;
-            _inviteService = inviteService;
-            _inviteRepo = inviteRepo;
-            _userRegistrationService = userRegistrationService;
         }
 
         [HttpPost("register")]
@@ -76,20 +73,35 @@ namespace fightnight.Server.Controllers
                     return BadRequest(ModelState);
                 }
 
-                if (await _userManager.FindByEmailAsync(registerDto.Email.ToLower()) != null)
+                if (await _userManager.FindByEmailAsync(registerDto.Email) != null)
                 {
                     return BadRequest("Email Already Taken");
                 }
 
-                var result = await _userRegistrationService.RegisterUserAsync(registerDto, Response);
-                return Ok(result);
+                AppUser appUser = AppUserFactory.Create(registerDto);
+
+                Invitation invite = await _inviteService.UpdateUserAsync(appUser, registerDto.inviteId, Response);
+
+                await _AuthService.RegisterUserAsync(appUser, registerDto);
+                IActionResult result = Ok("User has been Registered");
+
+                if (!appUser.EmailConfirmed)
+                {
+                    Email email = new RegisterConfirmEmail(registerDto.Email, _tokenService);
+                    await _emailService.SendEmail(email);
+
+                    result = Ok("Verification Email has been Sent");
+                }
+
+                await _inviteService.AddUserToEventAsync(invite);
+
+                return result;
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex);
             }
         }
-
 
         [HttpPatch("verify")]
         public async Task<IActionResult> VerifyEmail([FromBody] string token)
@@ -102,36 +114,36 @@ namespace fightnight.Server.Controllers
             IEnumerable<Claim> claims = _tokenService.DecodeToken(token);
 
             var exp = claims.GetClaimValue("exp");
+
             if (DateTime.Parse(exp) < DateTime.Now)
             {
                 // Send new email
                 return BadRequest("Token Expired");
             }
             
-            var email = claims.GetClaimValue("email");
+            string email = claims.GetClaimValue("email");
 
             AppUser appUser = await _userManager.FindByEmailAsync(email);
 
-
-            if (appUser == null){
+            if (appUser == null)
+            {
                 return BadRequest("User does not Exist.");
             }
-            else if (appUser.EmailConfirmed){
-                
+            else if (appUser.EmailConfirmed)
+            {
                 return BadRequest("User Already Verified");
             }
 
             appUser.EmailConfirmed = true;
             var result = await _userManager.UpdateAsync(appUser);
 
-            if (!result.Succeeded) {
+            if (!result.Succeeded)
+            {
                 return BadRequest("There has been an Error Verifying User");
             }
+            
             return Ok("Email has been Verified");
         }
-
-
-
 
         [HttpGet("ping")]
         public IActionResult pingAuth()
@@ -184,7 +196,7 @@ namespace fightnight.Server.Controllers
             Response.Redirect("https://localhost:5173/home");
 
             if (loginDto.inviteId != null)
-            {
+            {/*
                 Invitation invite = await _inviteRepo.GetInvitationAsync(loginDto.inviteId);
                 if (invite != null)
                 {
@@ -198,8 +210,8 @@ namespace fightnight.Server.Controllers
 
                     Response.Redirect("https://localhost:5173/" + invite.eventId + "/team");
                 }
+                */
             }
-
             return Ok(
                 new NewUserDto
                 {
@@ -289,7 +301,7 @@ namespace fightnight.Server.Controllers
                 SendingTo = email,
                 EmailBody = "The code to reset your password is:" + token
             };
-            await _emailService.Send(emailTemp);
+            await _emailService.SendEmail(emailTemp);
 
             return Ok("Email has been sent");
         }

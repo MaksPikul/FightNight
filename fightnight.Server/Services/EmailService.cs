@@ -13,22 +13,21 @@ namespace fightnight.Server.Services
             _fluentEmail = fluentEmail 
                 ?? throw new ArgumentNullException(nameof(fluentEmail));
         }
-        public async Task<SendResponse> Send(Abstracts.Email emailMetaData)
+        public async Task<SendResponse> SendEmail(Abstracts.Email email)
         {
-            return await _fluentEmail
-                .To(emailMetaData.Recipient)
-                .Subject(emailMetaData.Subject)
-                .Body(emailMetaData.Body, isHtml:true)
+            SendResponse response = await _fluentEmail
+                .To(email.Recipient)
+                .Subject(email.Subject)
+                .Body(email.Body, isHtml:true)
                 .SendAsync();
+
+            if (!response.Successful)
+            {
+                throw new Exception("Email Failed to Send, Message ID: " + response.MessageId + " Errors: " + response.ErrorMessages);
+            }
+
+            return response;
         }
     }
-    public class EmailSettings
-    {
-        public string DefaultSenderEmail { get; set; }
-        public string DefaultSenderName { get; set; }
-        public string SmtpServer { get; set; }
-        public int SmtpPort { get; set; }
-        public string SmtpUsername { get; set; }
-        public string SmtpPassword { get; set; }
-    }
+    
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using fightnight.Server.Interfaces;
 using System.Net;
 using System.Net.Mail;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -13,6 +14,10 @@ using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Repos;
 using fightnight.Server.Models.Tables;
+using fightnight.Server.Providers.OAuthProviders;
+using MetInProximityBack.Factories;
+using MetInProximityBack.Interfaces;
+using MetInProximityBack.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -143,9 +148,13 @@ builder.Services.AddScoped<IMessageRepo, MessageRepo>();
 builder.Services.AddScoped<IInviteRepo, InviteRepo>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IGoogleTokenService, GoogleTokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IOAuthService, OAuthService>();
+
+builder.Services.AddTransient<IOAuthProvider, GoogleOAuthProvider>();
+builder.Services.AddTransient<IOAuthProvider, MicrosoftOAuthProvider>();
+builder.Services.AddSingleton<OAuthProviderFactory>();
 
 builder.Services.AddSignalR();
 
