@@ -78,11 +78,11 @@ namespace fightnight.Server.Controllers
                     return BadRequest("Email Already Taken");
                 }
 
-                AppUser appUser = AppUserFactory.Create(registerDto);
+                AppUser appUser = AppUserFactory.CreateAppUser(registerDto.Username, registerDto.Email);
 
                 Invitation invite = await _inviteService.UpdateUserAsync(appUser, registerDto.inviteId, Response);
 
-                await _AuthService.RegisterUserAsync(appUser, registerDto);
+                await _AuthService.RegisterUserAsync(appUser, registerDto.Password);
                 IActionResult result = Ok("User has been Registered");
 
                 if (!appUser.EmailConfirmed)
@@ -148,89 +148,54 @@ namespace fightnight.Server.Controllers
         [HttpGet("ping")]
         public IActionResult pingAuth()
         {
-            bool isAuthed = User.Identity.IsAuthenticated;
-            
-            if (isAuthed)
-            {
-                // get user info
-                return Ok(new NewUserDto
-                {
-                    userId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    userName = User.Identity.Name, 
-                    email = User.FindFirstValue(ClaimTypes.Email),
-                    picture = "edit claims type to have pfps", //User.FindFirstValue(ClaimTypes.Picture),
-                    isAuthed = isAuthed, 
-                    role = User.FindFirstValue(ClaimTypes.Role)
-                });
-            }
-            return Ok(new { isAuthed });
+            return Ok(AppUserFactory.ReturnAuthedUser(User));
         }
      
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == loginDto.Email.ToLower());
-            if (user == null){
-                return Unauthorized("Email not found");
-            }
-            if (!user.EmailConfirmed)
+            try
             {
-                return Unauthorized("Confirm Your Email before logging in");
-            }
-
-            var SignInResult = await _signInManager.PasswordSignInAsync(user.UserName, loginDto.Password, loginDto.rememberMe, true);
-            if (SignInResult.IsLockedOut){
-                //Send Email to this user saying someone is trying to access your account
-                return Unauthorized("Account is locked");
-            }
-            else if (!SignInResult.Succeeded){
-                return Unauthorized("Invalid Credentials");
-            }
-
-            //if invite param exists,
-            //1. find invite to confirm
-
-            Response.Redirect("https://localhost:5173/home");
-
-            if (loginDto.inviteId != null)
-            {/*
-                Invitation invite = await _inviteRepo.GetInvitationAsync(loginDto.inviteId);
-                if (invite != null)
+                if (!ModelState.IsValid)
                 {
-                    var AppUserEvent = new AppUserEvent
-                    {
-                        EventId = invite.eventId,
-                        AppUserId = user.Id,
-                        Role = EventRole.Moderator,
-                    };
-                    await _memberRepo.AddMemberToEventAsync(AppUserEvent);
+                    return BadRequest(ModelState);
+                }
 
-                    Response.Redirect("https://localhost:5173/" + invite.eventId + "/team");
-                }
-                */
-            }
-            return Ok(
-                new NewUserDto
+                AppUser appUser = await _userManager.FindByEmailAsync(loginDto.Email);
+
+                if (appUser == null)
                 {
-                    userId = user.Id,
-                    userName = user.UserName,
-                    email = user.Email,
-                    picture = user.Picture,
-                    isAuthed = true,
-                    role = User.FindFirstValue(ClaimTypes.Role)
+                    return Unauthorized("Email not found");
                 }
-            );
+                if (!appUser.EmailConfirmed)
+                {
+                    // Send Email
+                    return Unauthorized("Confirm Your Email before logging in");
+                }
+
+                appUser = await _AuthService.LogUserInAsync(appUser, loginDto.Password, loginDto.rememberMe);
+
+                Invitation invite = await _inviteService.UpdateUserAsync(appUser, loginDto.inviteId, Response);
+                await _inviteService.AddUserToEventAsync(invite);
+
+                return Ok(
+                    AppUserFactory.ReturnAuthedUser(User)
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
 
         [HttpPost("logout")]
-        public async Task Logout()
+        public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            Response.Redirect("https://localhost:5173/");
+            return Redirect("https://localhost:5173/");
         }
+
 
         [HttpPost("oauth/{provider}")]
         public async Task<IActionResult> Authenticate(
@@ -253,10 +218,17 @@ namespace fightnight.Server.Controllers
                     return BadRequest("Email not verified.");
                 }
 
-                AppUser appUser = await _userManager.FindByEmailAsync(user.UserEmail) ?? await AppUserFactory.Create(user.UserName, user.UserEmail);
+                AppUser appUser = await _userManager.FindByEmailAsync(user.UserEmail);
 
-                await _signInManager.SignInAsync(appUser, isPersistent: true);
+                if (appUser == null)
+                {
+                    appUser = AppUserFactory.CreateAppUser(user.UserName, user.UserEmail);
+                    appUser.EmailConfirmed = true;
+                    await _AuthService.RegisterUserAsync(appUser);
+                }
                 
+                await _AuthService.LogUserInAsync(appUser);
+
                 return Redirect("https://localhost:5173/home");
             }
             catch (ArgumentException ex)
@@ -266,8 +238,13 @@ namespace fightnight.Server.Controllers
         }
 
 
-
         // ----------------------------------------------
+
+
+
+
+
+
 
 
 
