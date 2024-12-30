@@ -29,8 +29,6 @@ namespace fightnight.Server.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly OAuthProviderFactory _providerFactory;
-        private readonly AppDBContext _context;
-        private readonly SignInManager<AppUser> _signInManager;
 
         private readonly IInviteService _inviteService;
         private readonly ITokenService _tokenService;
@@ -38,12 +36,9 @@ namespace fightnight.Server.Controllers
         private readonly IEmailService _emailService;
         private readonly IAuthService _AuthService;
 
-
         public AccountController(
             UserManager<AppUser> userManager,
             OAuthProviderFactory providerFactory,
-            AppDBContext context,
-            SignInManager<AppUser> signInManager,
 
             IInviteService inviteService,
             ITokenService tokenService,
@@ -53,8 +48,6 @@ namespace fightnight.Server.Controllers
         {
             _userManager = userManager;
             _providerFactory = providerFactory;
-            _context = context;
-            _signInManager = signInManager;
 
             _inviteService = inviteService;
             _tokenService = tokenService;
@@ -83,22 +76,23 @@ namespace fightnight.Server.Controllers
                 Invitation invite = await _inviteService.UpdateUserAsync(appUser, registerDto.inviteId, Response);
 
                 await _AuthService.RegisterUserAsync(appUser, registerDto.Password);
-                IActionResult result = Ok("User has been Registered");
+
+                await _inviteService.AddUserToEventAsync(invite);
 
                 if (!appUser.EmailConfirmed)
                 {
                     Email email = new RegisterConfirmEmail(registerDto.Email, _tokenService);
                     await _emailService.SendEmail(email);
 
-                    result = Ok("Verification Email has been Sent");
+                    return Ok("Verification Email has been Sent");
                 }
 
-                await _inviteService.AddUserToEventAsync(invite);
-
-                return result;
+                return Ok("User has been Registered");
             }
             catch (Exception ex)
             {
+                // Instead of writeLine, you can use a Logging Library like serilog
+                Console.WriteLine(ex);
                 return StatusCode(500, ex);
             }
         }
@@ -106,21 +100,18 @@ namespace fightnight.Server.Controllers
         [HttpPatch("verify")]
         public async Task<IActionResult> VerifyEmail([FromBody] string token)
         {
-            if (token == null)
+            if (string.IsNullOrWhiteSpace(token))
             {
                 return BadRequest("Missing Token");
             }
 
-            IEnumerable<Claim> claims = _tokenService.DecodeToken(token);
-
-            var exp = claims.GetClaimValue("exp");
-
-            if (DateTime.Parse(exp) < DateTime.Now)
+            bool tokenValid = _tokenService.ValidateToken(token);
+            if (!tokenValid)
             {
-                // Send new email
-                return BadRequest("Token Expired");
+                return BadRequest("Token is Invalid");
             }
-            
+
+            IEnumerable<Claim> claims = _tokenService.DecodeToken(token);
             string email = claims.GetClaimValue("email");
 
             AppUser appUser = await _userManager.FindByEmailAsync(email);
@@ -135,20 +126,20 @@ namespace fightnight.Server.Controllers
             }
 
             appUser.EmailConfirmed = true;
-            var result = await _userManager.UpdateAsync(appUser);
+            IdentityResult result = await _userManager.UpdateAsync(appUser);
 
             if (!result.Succeeded)
             {
                 return BadRequest("There has been an Error Verifying User");
             }
             
-            return Ok("Email has been Verified");
+            return Ok("Account has been Verified");
         }
 
         [HttpGet("ping")]
         public IActionResult pingAuth()
         {
-            return Ok(AppUserFactory.ReturnAuthedUser(User));
+            return Ok(AppUserFactory.CreateAuthedUser(User));
         }
      
 
@@ -180,7 +171,7 @@ namespace fightnight.Server.Controllers
                 await _inviteService.AddUserToEventAsync(invite);
 
                 return Ok(
-                    AppUserFactory.ReturnAuthedUser(User)
+                    AppUserFactory.CreateAuthedUser(User)
                 );
             }
             catch (Exception ex)
@@ -192,8 +183,9 @@ namespace fightnight.Server.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
-            return Redirect("https://localhost:5173/");
+            _AuthService.LogUserOutAsync();
+            Response.Redirect("https://localhost:5173/");
+            return Ok(AppUserFactory.CreateAuthedUser(User));
         }
 
 
@@ -249,6 +241,10 @@ namespace fightnight.Server.Controllers
 
 
 
+        // These have not been refactored Yet, Want to focus on more important features, they also hold more learning value :D
+
+
+
         [HttpPost("forgot-password")]
         public async Task<IActionResult> SendForgotPasswordEmail([FromBody] string email)
         {
@@ -270,15 +266,17 @@ namespace fightnight.Server.Controllers
                 //tokenType = TokenType.changePassword
             };
 
-            var createdEntry = await _context.UserToken.AddAsync(userToken);
-            await _context.SaveChangesAsync();
-
+            //
+            //var createdEntry = await _context.UserToken.AddAsync(userToken);
+            //await _context.SaveChangesAsync();
+            /*
             var emailTemp = new ConfirmEmailTemplate
             {
                 SendingTo = email,
                 EmailBody = "The code to reset your password is:" + token
             };
             await _emailService.SendEmail(emailTemp);
+            */
 
             return Ok("Email has been sent");
         }
@@ -296,7 +294,7 @@ namespace fightnight.Server.Controllers
         [HttpPatch("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] PasswordResetVals prVals)
         {
-            UserToken userToken = await _context.UserToken.FirstOrDefaultAsync(x => x.token == prVals.token && x.userEmail == prVals.email && x.tokenType.Equals(TokenType.changePassword));
+            /*UserToken userToken = await _context.UserToken.FirstOrDefaultAsync(x => x.token == prVals.token && x.userEmail == prVals.email && x.tokenType.Equals(TokenType.changePassword));
             if (userToken == null)
             {
                 return BadRequest("Invalid Verification Token");
@@ -313,6 +311,7 @@ namespace fightnight.Server.Controllers
             {
                 return BadRequest("Failed to update password");
             }
+            */
             return Ok("Password has been changed");
         }
     }

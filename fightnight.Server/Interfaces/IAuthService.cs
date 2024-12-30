@@ -7,5 +7,6 @@ namespace fightnight.Server.Interfaces
     {
         Task<AppUser> RegisterUserAsync(AppUser appUser, string password = null);
         Task<AppUser> LogUserInAsync(AppUser appUser, string password = null, bool rememberMe = false);
+        void LogUserOutAsync();
     }
 }

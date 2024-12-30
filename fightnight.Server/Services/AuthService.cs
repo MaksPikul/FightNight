@@ -39,7 +39,7 @@ namespace fightnight.Server.Services
 
         public async Task<AppUser> RegisterUserAsync(AppUser appUser, string password = null)
         {
-            // you can pass in nulls,
+            // you can pass in nulls for password,
             // I just wanted to show here that u can create with nulls
             IdentityResult createResult = (password == null) ? 
                 await _userManager.CreateAsync(appUser) 
@@ -51,7 +51,7 @@ namespace fightnight.Server.Services
                 throw new Exception("Internal Error Creating User");
             }
 
-            var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
+            IdentityResult roleResult = await _userManager.AddToRoleAsync(appUser, "User");
             if (!roleResult.Succeeded)
             {
                 throw new Exception("Internal Error Adding Role to User");
@@ -80,10 +80,12 @@ namespace fightnight.Server.Services
                     throw new UnauthorizedAccessException("Invalid Credentials");
                 }
             }
-
             return appUser;
-            
+        }
 
+        public async void LogUserOutAsync()
+        {
+            await _signInManager.SignOutAsync();
         }
     }
 

@@ -14,7 +14,7 @@ namespace fightnight.Server.Providers.EmailProviders
             var exp = DateTime.Now.AddMinutes(5).ToString();
 
             List<Claim> claims = new ClaimsBuilder()
-                .AddClaim("exp", exp)
+                .AddClaim("expiration", exp)
                 .AddClaim("email", email)
                 .Build();
 

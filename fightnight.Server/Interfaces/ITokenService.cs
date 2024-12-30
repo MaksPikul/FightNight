@@ -7,5 +7,6 @@ namespace fightnight.Server.Interfaces
     {
         string CreateToken(List<Claim> claims);
         IEnumerable<Claim> DecodeToken(string token);
+        bool ValidateToken(string token);
     }
 }

@@ -22,9 +22,6 @@ namespace fightnight.Server.Services
             _memberRepo = memberRepo;
         }
 
-
-        //
-
         public async Task<Invitation> UpdateUserAsync(AppUser appUser, string inviteId, HttpResponse response)
         {
             Invitation invite = await _inviteRepo.GetInvitationAsync(inviteId);
@@ -38,6 +35,7 @@ namespace fightnight.Server.Services
 
             return invite;
         }
+
         public async Task<Invitation> AddUserToEventAsync(Invitation invite)
         {
             if (invite == null)
