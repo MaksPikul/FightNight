@@ -165,7 +165,7 @@ namespace fightnight.Server.Controllers
                     return Unauthorized("Confirm Your Email before logging in");
                 }
 
-                appUser = await _AuthService.LogUserInAsync(appUser, loginDto.Password, loginDto.rememberMe);
+                appUser = await _AuthService.LogUserInAsync(appUser, User, loginDto.Password, loginDto.rememberMe);
 
                 Invitation invite = await _inviteService.UpdateUserAsync(appUser, loginDto.inviteId, Response);
                 await _inviteService.AddUserToEventAsync(invite);
@@ -214,12 +214,12 @@ namespace fightnight.Server.Controllers
 
                 if (appUser == null)
                 {
-                    appUser = AppUserFactory.CreateAppUser(user.UserName, user.UserEmail);
+                    appUser = AppUserFactory.CreateAppUser(user.UserName, user.UserEmail, user.Picture);
                     appUser.EmailConfirmed = true;
                     await _AuthService.RegisterUserAsync(appUser);
                 }
                 
-                await _AuthService.LogUserInAsync(appUser);
+                await _AuthService.LogUserInAsync(appUser, User);
 
                 return Redirect("https://localhost:5173/home");
             }

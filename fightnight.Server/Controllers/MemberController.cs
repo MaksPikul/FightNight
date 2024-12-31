@@ -161,18 +161,18 @@ namespace fightnight.Server.Controllers
             var appUser = await _userManager.FindByEmailAsync(loggedInUserEmail);
             var AppUserEvent = new AppUserEvent
             {
-                EventId = eventVar.id,
+                EventId = eventVar.Id,
                 AppUserId = appUser.Id,
                 Role = EventRole.Moderator,
             };
 
-            var result = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventVar.id);
+            var result = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventVar.Id);
             if (result == true) return BadRequest("Already a member");
 
             await _memberRepo.AddMemberToEventAsync(AppUserEvent);
             //Check if failed
 
-            return Redirect("https://localhost:5173/event/" + eventVar.id + "/team");
+            return Redirect("https://localhost:5173/event/" + eventVar.Id + "/team");
         }
 
         [HttpDelete]

@@ -1,4 +1,5 @@
 ﻿using Azure;
+using Azure.Core;
 using fightnight.Server.Abstracts;
 using fightnight.Server.Builders;
 using fightnight.Server.Dtos.Account;
@@ -60,7 +61,7 @@ namespace fightnight.Server.Services
             return appUser;
         }
 
-        public async Task<AppUser> LogUserInAsync(AppUser appUser, string password = null, bool rememberMe = false)
+        public async Task<AppUser> LogUserInAsync(AppUser appUser, ClaimsPrincipal user, string password = null, bool rememberMe = false)
         {
             if (password == null)
             {
@@ -68,6 +69,9 @@ namespace fightnight.Server.Services
             }
             else
             {
+                var identity = (ClaimsIdentity)user.Identity;
+                identity.AddClaim(new Claim("Picture", appUser.Picture));
+
                 var SignInResult = await _signInManager.PasswordSignInAsync(appUser.UserName, password, rememberMe, lockoutOnFailure: true);
 
                 if (SignInResult.IsLockedOut)
@@ -85,6 +89,8 @@ namespace fightnight.Server.Services
 
         public async void LogUserOutAsync()
         {
+            // Seems unneccessary, but it takes the signInManager dependency out of account controller :D
+            // Which means its necessary
             await _signInManager.SignOutAsync();
         }
     }

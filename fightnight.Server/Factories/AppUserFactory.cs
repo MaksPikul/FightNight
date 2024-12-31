@@ -8,12 +8,13 @@ namespace fightnight.Server.Factories
     public class AppUserFactory
     {
         // Could make UserDto class, then extend wether login Dto or Register Dto
-        public static AppUser CreateAppUser(string userName, string email)
+        public static AppUser CreateAppUser(string userName, string email, string picture = null)
         {
             return new AppUser
             {
                 UserName = userName,
                 Email = email,
+                Picture = picture,
                 EmailConfirmed = false
             };
         }
@@ -33,7 +34,7 @@ namespace fightnight.Server.Factories
                     UserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                     UserName = User.Identity.Name,
                     Email = User.FindFirstValue(ClaimTypes.Email),
-                    Picture = "edit claims type to have pfps", //User.FindFirstValue(ClaimTypes.Picture),
+                    Picture = User.FindFirstValue("Picture"),
                     IsAuthed = true,
                     Role = User.FindFirstValue(ClaimTypes.Role)
                 };

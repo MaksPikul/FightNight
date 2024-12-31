@@ -2,7 +2,7 @@
 
 namespace fightnight.Server.Dtos.Member
 {
-    public class ReturnMemberDto
+    public class MemberResDto
     {
         public string Id {  get; set; }
         public string Email { get; set; } 

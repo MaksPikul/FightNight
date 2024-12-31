@@ -3,6 +3,7 @@ using fightnight.Server.Dtos.Member;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
 using fightnight.Server.Interfaces.IRepos;
+using fightnight.Server.Mappers;
 using fightnight.Server.Models.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,9 +23,24 @@ namespace fightnight.Server.repo
         {
             return await _context.Event.ToListAsync();
         }
-        public async Task<Event> GetEventAsync(string id)
+
+        public async Task<Event> GetEventONLYAsync(string id)
         {
             return await _context.Event.FindAsync(id);
+        }
+
+        public async Task<EventMembersDTO> GetEventWITHMembersAsync(string id)
+        {
+            var eventWithMembers = await _context.Event
+                .Where(e => e.Id == id)
+                .Include(e => e.AppUserEvents) 
+                    .ThenInclude(ue => ue.AppUser) 
+                .Select(e => e.MapToEventMembersDTO(
+                    e.AppUserEvents.Select(ue => ue.AppUser.MapToMemberResDto()).ToList(),
+                    e.AppUserEvents.Select(ape => ape.Role).FirstOrDefault()
+                )).FirstOrDefaultAsync();
+
+            return eventWithMembers;
         }
 
         public Task<Event> GetEventWithJoinCodeAsync(string code)
@@ -46,13 +62,13 @@ namespace fightnight.Server.repo
                 .Select(eventV =>
                     new EventDto
                     {
-                        id = eventV.Event.id,
+                        Id = eventV.Event.Id,
                         title = eventV.Event.title,
-                        date = eventV.Event.date,
+                        startDate = eventV.Event.date,
                         //adminId = eventV.Event.adminId,
                         role = eventV.Role,
                         venueAddress = eventV.Event.venueAddress,
-                        time = eventV.Event.time,
+                        startTime = eventV.Event.startTime,
                         status = eventV.Event.status,
                     })
                 .ToListAsync();

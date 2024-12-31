@@ -15,21 +15,18 @@ namespace fightnight.Server.Controllers
     {
         private readonly IStorageService _storageService;
         private readonly IConfiguration _config;
-        private readonly AppDBContext _context;
         private readonly UserManager<AppUser> _userManager;
         public S3Controller(
             IStorageService storageService,
             IConfiguration configuration,
-            AppDBContext context,
             UserManager<AppUser> userManager) 
         {
             _storageService = storageService;
             _config = configuration;
-            _context = context;
             _userManager = userManager;
         }
 
-        [HttpPost("upload-pfp")]
+        [HttpPost("upload/pfp")]
         [Authorize]
         public async Task<IActionResult> UploadPFP(IFormFile file)
         {

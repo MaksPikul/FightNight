@@ -1,25 +1,25 @@
 ﻿using fightnight.Server.Enums;
+using fightnight.Server.Mappers;
 
 namespace fightnight.Server.Dtos.User
 {
-    public class EventDto
+    public record EventDto 
     {
-        public string id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string title { get; set; } = string.Empty;
-        public DateTime date { get; set; } = DateTime.Now;
-        public string time {  get; set; } = string.Empty;
+        public DateTime startDate { get; set; } = DateTime.Now;
+        public string startTime {  get; set; } = string.Empty;
         public TimeSpan eventDur { get; set; } = TimeSpan.Zero;
-        public string venue { get; set; } 
+        public string venueName { get; set; } 
         public string venueAddress { get; set; } 
         public string desc { get; set; } = string.Empty;
-        public string type { get; set; } = string.Empty;
+        public string eventType { get; set; } = string.Empty;
         public EventStatus status { get; set; } = EventStatus.Planning;
         public string organizer { get; set; } = string.Empty;
         public string adminId { get; set; } = string.Empty;
-        public int numMatches { get; set; } = 3;
-        public int numRounds { get; set; } = 3;
-        public int roundDur { get; set; } = 3;
+        public int numberMatches { get; set; } = 3;
+        public int numberRounds { get; set; } = 3;
+        public int roundDuration { get; set; } = 3;
         public EventRole role { get; set; }
-
     }
 }

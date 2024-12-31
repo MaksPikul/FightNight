@@ -1,5 +1,6 @@
 ﻿using fightnight.Server.Data;
 using fightnight.Server.Dtos.Event;
+using fightnight.Server.Dtos.Member;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
 using fightnight.Server.Extensions;
@@ -48,26 +49,31 @@ namespace fightnight.Server.Controllers
             return Ok(userEvents);
         }
 
-        // Once redirected, get info about the event
+        // Once redirected, get info about the event and its members
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<IActionResult> GetById([FromRoute] string id)
+        public async Task<IActionResult> GetEventByEventId([FromRoute] string id)
         {
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
-            var userEventRole = _eventRepo.GetUserEventRole(appUser.Id, id);
-            if (userEventRole == EventRole.Spectator)
+            try
             {
-                return Unauthorized(userEventRole);
-            }
+                var email = User.GetEmail();
+                var appUser = await _userManager.FindByEmailAsync(email);
 
-            var eventV = await _eventRepo.GetEventAsync(id);
-            if (eventV == null)
+                 EventMembersDTO e = await _eventRepo.GetEventWITHMembersAsync(id);
+                 if (e == null){
+                     return NotFound();
+                 }
+
+                 if (e.role == EventRole.Spectator) {
+                    return Unauthorized("Unauthorized for this Action");
+                 }
+
+                return Ok(e);
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
-
-            return Ok(eventV.ToEventDtoWCodes(userEventRole));
         }
 
         //Creates event, Adds to Joined Table, Returns Event Id to redirect
@@ -94,11 +100,11 @@ namespace fightnight.Server.Controllers
             await _eventRepo.CreateEventAsync(eventModel);
 
             var userEvents = await _eventRepo.GetUserEvents(appUser);
-            if (userEvents.Any(e => e.id == eventModel.id)) return BadRequest("Cannot add same event");
+            if (userEvents.Any(e => e.Id == eventModel.Id)) return BadRequest("Cannot add same event");
 
             var AppUserEvent = new AppUserEvent
             {
-                EventId = eventModel.id,
+                EventId = eventModel.Id,
                 AppUserId = appUser.Id,
                 Role = EventRole.Admin,
             };
@@ -106,7 +112,7 @@ namespace fightnight.Server.Controllers
             await _memberRepo.AddMemberToEventAsync(AppUserEvent);
             if (AppUserEvent == null) return StatusCode(500, "Could not add AppUserEvent to DB");
 
-            return Ok(eventModel.id);
+            return Ok(eventModel.Id);
         }
 
         [HttpPatch]
@@ -126,17 +132,17 @@ namespace fightnight.Server.Controllers
 
             if (ueRole.Equals(EventRole.Admin))
             {
-                var eventVs = await _eventRepo.GetEventAsync(eventDto.id);
+                var eventVs = await _eventRepo. GetEventONLYAsync(eventDto.id);
 
                 eventVs.title = eventDto.title;
-                eventVs.time = eventDto.time;
+                eventVs.startTime = eventDto.time;
                 eventVs.date = eventDto.date;
                 eventVs.desc = eventDto.desc;
                 //eventVs.updatedAt = DateTime.Now;
                 eventVs.venueAddress = eventDto.venueAddress;
-                eventVs.numMatches = eventDto.numMatches;
-                eventVs.numRounds = eventDto.numRounds;
-                eventVs.roundDur = eventDto.roundDur;
+                eventVs.numberMatches = eventDto.numMatches;
+                eventVs.numberRounds = eventDto.numRounds;
+                eventVs.roundDuration = eventDto.roundDur;
 
                 await _eventRepo.UpdateEventAsync(eventVs);
                 return Ok(eventVs.ToEventDto(ueRole));
@@ -164,7 +170,7 @@ namespace fightnight.Server.Controllers
             }
             else if (ueRole.Equals(EventRole.Admin))
             {
-                var eventVar = await _eventRepo.GetEventAsync(eventId);
+                var eventVar = await _eventRepo.GetEventONLYAsync(eventId);
 
                 await _eventRepo.DeleteEventAsync(eventVar);
                 
@@ -191,7 +197,7 @@ namespace fightnight.Server.Controllers
                 return Unauthorized("Admin Action, You are Unauthorized");
             }
 
-            var curEvent = await _eventRepo.GetEventAsync(eventId);
+            var curEvent = await _eventRepo.GetEventONLYAsync(eventId);
             if (curEvent == null) return BadRequest("Event Not Found");
 
             // generate code

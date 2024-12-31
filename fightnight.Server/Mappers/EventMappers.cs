@@ -1,4 +1,5 @@
 ﻿using fightnight.Server.Dtos.User;
+using fightnight.Server.Dtos.Member;
 using fightnight.Server.Enums;
 using fightnight.Server.Models.Tables;
 
@@ -16,24 +17,51 @@ namespace fightnight.Server.Mappers
 
     public static class EventMappers
     {
+
+        // I need to fix this somehow :/ cant be having two very similar mappers
+        public static EventMembersDTO MapToEventMembersDTO(this Event eventModel, List<MemberResDto> userEventModel, EventRole role)
+        {
+            EventMembersDTO emDTO = new EventMembersDTO {
+                Id = eventModel.Id,
+                title = eventModel.title,
+                startTime = eventModel.startTime,
+                startDate = eventModel.date,
+                //eventDur = eventModel.eventDur,
+                venueAddress = eventModel.venueAddress,
+                desc = eventModel.desc,
+                eventType = eventModel.eventType,
+                status = eventModel.status,
+                organizer = eventModel.organizer,
+                //adminId = eventModel.adminId,
+                numberMatches = eventModel.numberMatches,
+                numberRounds = eventModel.numberRounds,
+                roundDuration = eventModel.roundDuration,
+                role = role,
+
+                EventMembers = userEventModel
+            };
+
+            return emDTO;
+        }
+
         public static EventDto ToEventDto(this Event eventModel, EventRole role)
         {
             return new EventDto
             {
-                id = eventModel.id,
+                Id = eventModel.Id,
                 title = eventModel.title,
-                time = eventModel.time,
-                date = eventModel.date,
-                eventDur = eventModel.eventDur,
+                startTime = eventModel.startTime,
+                startDate = eventModel.date,
+                //eventDur = eventModel.eventDur,
                 venueAddress = eventModel.venueAddress,
                 desc = eventModel.desc,
-                type = eventModel.type,
+                eventType = eventModel.eventType,
                 status = eventModel.status,
                 organizer = eventModel.organizer,
                 //adminId = eventModel.adminId,
-                numMatches = eventModel.numMatches,
-                numRounds = eventModel.numRounds,
-                roundDur = eventModel.roundDur,
+                numberMatches = eventModel.numberMatches,
+                numberRounds = eventModel.numberRounds,
+                roundDuration = eventModel.roundDuration,
                 role = role
             };
         }
@@ -42,20 +70,20 @@ namespace fightnight.Server.Mappers
         {
             return new EventDtoWCodes
             {
-                id = eventModel.id,
+                Id = eventModel.Id,
                 title = eventModel.title,
-                time = eventModel.time,
-                date = eventModel.date,
+                startTime = eventModel.startTime,
+                startDate] = eventModel.date,
                 eventDur = eventModel.eventDur,
                 venueAddress = eventModel.venueAddress,
                 desc = eventModel.desc,
-                type = eventModel.type,
+                eventType = eventModel.eventType,
                 status = eventModel.status,
                 organizer = eventModel.organizer,
                 //adminId = eventModel.adminId,
-                numMatches = eventModel.numMatches,
-                numRounds = eventModel.numRounds,
-                roundDur = eventModel.roundDur,
+                numberMatches = eventModel.numberMatches,
+                numberRounds = eventModel.numberRounds,
+                roundDuration = eventModel.roundDuration,
                 role = role,
                 joinCode = eventModel.joinCode,
                 //fighterJoinCode = eventModel.fighterJoinCode,
