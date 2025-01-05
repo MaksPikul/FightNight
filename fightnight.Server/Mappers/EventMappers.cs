@@ -2,11 +2,12 @@
 using fightnight.Server.Dtos.Member;
 using fightnight.Server.Enums;
 using fightnight.Server.Models.Tables;
+using fightnight.Server.Dtos.Event;
 
 namespace fightnight.Server.Mappers
 {
 
-    public class EventDtoWCodes : EventDto
+    public class EventDtoWCodes : EventResDto
     {
         public string joinCode { get; set; }
         //public string fighterJoinCode { get; set; }
@@ -44,9 +45,9 @@ namespace fightnight.Server.Mappers
             return emDTO;
         }
 
-        public static EventDto ToEventDto(this Event eventModel, EventRole role)
+        public static EventResDto ToEventDto(this Event eventModel, EventRole role)
         {
-            return new EventDto
+            return new EventResDto
             {
                 Id = eventModel.Id,
                 title = eventModel.title,
@@ -73,8 +74,8 @@ namespace fightnight.Server.Mappers
                 Id = eventModel.Id,
                 title = eventModel.title,
                 startTime = eventModel.startTime,
-                startDate] = eventModel.date,
-                eventDur = eventModel.eventDur,
+                startDate = eventModel.date,
+                //eventDur = eventModel.eventDur,
                 venueAddress = eventModel.venueAddress,
                 desc = eventModel.desc,
                 eventType = eventModel.eventType,
@@ -91,15 +92,5 @@ namespace fightnight.Server.Mappers
         }
 
 
-
-        public static Event EventFromCreateDto(this CreateEventDto eventDto)
-        {
-            return new Event
-            {
-                title = eventDto.Title,
-                date = eventDto.Date,
-
-            };
-        }
     }
 }

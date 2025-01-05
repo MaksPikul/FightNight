@@ -1,6 +1,6 @@
 ﻿namespace fightnight.Server.Dtos.Member
 {
-    public class RemoveMemberBody
+    public class RemoveMemberReqDto
     {
         public string userId { get; set; }
         public string eventId {  get; set; }

@@ -10,7 +10,6 @@ using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models;
 using fightnight.Server.Models.Tables;
-using fightnight.Server.Models.Types;
 using fightnight.Server.Repos;
 using fightnight.Server.Services;
 using FluentEmail.Core;
@@ -64,7 +63,7 @@ namespace fightnight.Server.Controllers
        
         [HttpPost("invite")]
         [Authorize]
-        public async Task<IActionResult> SendInvite([FromBody] SendInviteBody sendInvBody)
+        public async Task<IActionResult> SendInvite([FromBody] InviteMemberReqDto sendInvBody)
         {
             var sendingUserEmail = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(sendingUserEmail);
@@ -113,6 +112,13 @@ namespace fightnight.Server.Controllers
 
             return Ok(emailVerifyLink);//"If email exists, It will receive this Invite.");
         }
+
+
+
+        // Make one controller which handles invites in general? Using Chain Design Pattern
+
+
+
 
 
         // user clicks link in email or clicks Accept in home page, redirect to invite page, user clicks JOIN 
@@ -177,7 +183,7 @@ namespace fightnight.Server.Controllers
 
         [HttpDelete]
         [Authorize]
-        public async Task<IActionResult> RemoveMemberFromEvent([FromBody] RemoveMemberBody mbrBody)
+        public async Task<IActionResult> RemoveMemberFromEvent([FromBody] RemoveMemberReqDto mbrBody)
         {
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);

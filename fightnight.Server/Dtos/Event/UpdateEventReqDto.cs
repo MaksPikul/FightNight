@@ -1,6 +1,6 @@
 ﻿namespace fightnight.Server.Dtos.Event
 {
-    public class UpdateEventReqDto
+    public class UpdateEventDto
     {
         public string id { get; set; }
         public string title { get; set; }

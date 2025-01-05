@@ -45,7 +45,7 @@ namespace fightnight.Server.Controllers
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
 
-            var userEvents = await _eventRepo.GetUserEvents(appUser);
+            var userEvents = await _eventRepo.GetUserEvents(appUser.Id);
             return Ok(userEvents);
         }
 
@@ -59,14 +59,14 @@ namespace fightnight.Server.Controllers
                 var email = User.GetEmail();
                 var appUser = await _userManager.FindByEmailAsync(email);
 
-                 EventMembersDTO e = await _eventRepo.GetEventWITHMembersAsync(id);
-                 if (e == null){
-                     return NotFound();
-                 }
+                EventMembersDTO e = await _eventRepo.GetEventWITHMembersAsync(id);
+                if (e == null){
+                    return NotFound();
+                }
 
-                 if (e.role == EventRole.Spectator) {
+                if (e.role == EventRole.Spectator) {
                     return Unauthorized("Unauthorized for this Action");
-                 }
+                }
 
                 return Ok(e);
             }
@@ -79,14 +79,14 @@ namespace fightnight.Server.Controllers
         //Creates event, Adds to Joined Table, Returns Event Id to redirect
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto eventDto)
+        public async Task<IActionResult> CreateEvent([FromBody] CreateEventReqDto eventDto)
         {
             var email = User.GetEmail();
             var appUser = await _userManager.FindByEmailAsync(email);
 
             // Process payments
 
-            if (eventDto.Date < DateTime.UtcNow) {
+            if (eventDto.StartDate < DateTime.UtcNow) {
                 return BadRequest("Cant create events for the past");
             }
 
@@ -94,12 +94,12 @@ namespace fightnight.Server.Controllers
             {
                 //adminId = appUser.Id,
                 title = eventDto.Title,
-                date = eventDto.Date,
+                date = eventDto.StartDate,
             };
 
             await _eventRepo.CreateEventAsync(eventModel);
 
-            var userEvents = await _eventRepo.GetUserEvents(appUser);
+            var userEvents = await _eventRepo.GetUserEvents(appUser.Id);
             if (userEvents.Any(e => e.Id == eventModel.Id)) return BadRequest("Cannot add same event");
 
             var AppUserEvent = new AppUserEvent

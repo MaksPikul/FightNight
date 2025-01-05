@@ -1,5 +1,5 @@
 ﻿using fightnight.Server.Data;
-using fightnight.Server.Dtos.Member;
+using fightnight.Server.Dtos.Event;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
 using fightnight.Server.Interfaces.IRepos;
@@ -55,12 +55,12 @@ namespace fightnight.Server.repo
             return EventModel;
         }
 
-        public async Task<List<EventDto>> GetUserEvents(AppUser user)
+        public async Task<List<EventResDto>> GetUserEvents(string userId)
         {
             return await _context.AppUserEvent
-                .Where(u => u.AppUserId == user.Id)
+                .Where(u => u.AppUserId == userId)
                 .Select(eventV =>
-                    new EventDto
+                    new EventResDto
                     {
                         Id = eventV.Event.Id,
                         title = eventV.Event.title,

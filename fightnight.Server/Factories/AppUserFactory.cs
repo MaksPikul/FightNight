@@ -19,17 +19,17 @@ namespace fightnight.Server.Factories
             };
         }
 
-        public static AuthedUserDto CreateAuthedUser(ClaimsPrincipal User) 
+        public static AuthedUserResDto CreateAuthedUser(ClaimsPrincipal User) 
         {
             bool isAuthed = User.Identity.IsAuthenticated;
 
             if (!isAuthed)
             {
-                return new AuthedUserDto();
+                return new AuthedUserResDto();
             }
             else
             {
-                return new AuthedUserDto
+                return new AuthedUserResDto
                 {
                     UserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                     UserName = User.Identity.Name,

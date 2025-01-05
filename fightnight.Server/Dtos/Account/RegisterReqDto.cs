@@ -2,7 +2,7 @@
 
 namespace fightnight.Server.Dtos.Account
 {
-    public class RegisterDto
+    public class RegisterReqDto
     {
         [Required]
         public string? Username {  get; set; }

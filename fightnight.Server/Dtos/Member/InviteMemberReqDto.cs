@@ -1,10 +1,10 @@
 ﻿using fightnight.Server.Enums;
 
-namespace fightnight.Server.Models.Types
+namespace fightnight.Server.Dtos.Member
 {
-    public class SendInviteBody
+    public class InviteMemberReqDto
     {
-        public string newMemberEmail{ get; set; } = string.Empty;
+        public string newMemberEmail { get; set; } = string.Empty;
         public string eventId { get; set; } = string.Empty;
         public EventRole role { get; set; }
     }

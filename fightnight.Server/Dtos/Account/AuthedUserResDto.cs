@@ -1,6 +1,6 @@
 ﻿namespace fightnight.Server.Dtos.Account
 {
-    public class AuthedUserDto
+    public class AuthedUserResDto
     {
         public string UserId {  get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;

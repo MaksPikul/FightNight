@@ -3,7 +3,7 @@ using fightnight.Server.Mappers;
 
 namespace fightnight.Server.Dtos.User
 {
-    public record EventDto 
+    public record EventResDto
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string title { get; set; } = string.Empty;

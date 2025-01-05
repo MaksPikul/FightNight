@@ -8,6 +8,7 @@ using fightnight.Server.Interfaces;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models.Tables;
 using fightnight.Server.Providers.EmailProviders;
+using FluentEmail.Core;
 using FluentEmail.Core.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,49 +17,49 @@ using System.Security.Claims;
 
 namespace fightnight.Server.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService : IAuthService 
     {
-        private readonly UserManager<AppUser> _userManager;
+        protected readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailService _emailService;
         private readonly IInviteService _inviteService;
         private readonly ITokenService _tokenService;
+        private readonly IRegisterService _registerService;
         
         public AuthService(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             IEmailService emailService,
             IInviteService inviteService,
-            ITokenService tokenService  
+            ITokenService tokenService ,
+            IRegisterService registerService
         ) {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
             _inviteService = inviteService;
             _tokenService = tokenService;
+            _registerService = registerService;
+        }
+        // Add User to Database not confirmed,
+        // Add User to database confirmed
+        // log user in - stays the same
+        
+
+        // Did someone just implement the strategy Pattern? ;P
+        public async Task<AppUser> AddUnconfirmedUserAsync(AppUser appUser, string password = null)
+        {
+            return await _registerService.AddUnconfirmedUserAsync(appUser, password);
+        }
+        public async Task<AppUser> GetUnconfirmedUserAsync(string email)
+        {
+            return await _registerService.GetUnconfirmedUserAsync(email);
         }
 
-        public async Task<AppUser> RegisterUserAsync(AppUser appUser, string password = null)
+        // These stay the same, regardless of whether im using redis or db to confirm users
+        public async Task<IdentityResult> ConfirmUserAsync(AppUser appUser)
         {
-            // you can pass in nulls for password,
-            // I just wanted to show here that u can create with nulls
-            IdentityResult createResult = (password == null) ? 
-                await _userManager.CreateAsync(appUser) 
-                : 
-                await _userManager.CreateAsync(appUser, password);
-            
-            if (!createResult.Succeeded)
-            {
-                throw new Exception("Internal Error Creating User");
-            }
-
-            IdentityResult roleResult = await _userManager.AddToRoleAsync(appUser, "User");
-            if (!roleResult.Succeeded)
-            {
-                throw new Exception("Internal Error Adding Role to User");
-            }
-
-            return appUser;
+            return await _registerService.ConfirmUserAsync(appUser);
         }
 
         public async Task<AppUser> LogUserInAsync(AppUser appUser, ClaimsPrincipal user, string password = null, bool rememberMe = false)

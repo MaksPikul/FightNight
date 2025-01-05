@@ -57,7 +57,7 @@ namespace fightnight.Server.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterReqDto registerDto)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace fightnight.Server.Controllers
 
                 Invitation invite = await _inviteService.UpdateUserAsync(appUser, registerDto.inviteId, Response);
 
-                await _AuthService.RegisterUserAsync(appUser, registerDto.Password);
+                await _AuthService.AddUnconfirmedUserAsync(appUser, registerDto.Password);
 
                 await _inviteService.AddUserToEventAsync(invite);
 
@@ -85,6 +85,11 @@ namespace fightnight.Server.Controllers
                     await _emailService.SendEmail(email);
 
                     return Ok("Verification Email has been Sent");
+                }
+                else 
+                {
+                    // need to confirm user in the database, 
+                    await _AuthService.ConfirmUserAsync(appUser);
                 }
 
                 return Ok("User has been Registered");
@@ -104,7 +109,7 @@ namespace fightnight.Server.Controllers
             {
                 return BadRequest("Missing Token");
             }
-
+            // -this could be abstracted-
             bool tokenValid = _tokenService.ValidateToken(token);
             if (!tokenValid)
             {
@@ -113,8 +118,10 @@ namespace fightnight.Server.Controllers
 
             IEnumerable<Claim> claims = _tokenService.DecodeToken(token);
             string email = claims.GetClaimValue("email");
+            // - - -
 
-            AppUser appUser = await _userManager.FindByEmailAsync(email);
+            AppUser appUser = await _AuthService.GetUnconfirmedUserAsync(email);
+
 
             if (appUser == null)
             {
@@ -125,8 +132,7 @@ namespace fightnight.Server.Controllers
                 return BadRequest("User Already Verified");
             }
 
-            appUser.EmailConfirmed = true;
-            IdentityResult result = await _userManager.UpdateAsync(appUser);
+            IdentityResult result = await _AuthService.ConfirmUserAsync(appUser);
 
             if (!result.Succeeded)
             {
@@ -144,7 +150,7 @@ namespace fightnight.Server.Controllers
      
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto)
+        public async Task<IActionResult> Login(LoginReqDto loginDto)
         {
             try
             {

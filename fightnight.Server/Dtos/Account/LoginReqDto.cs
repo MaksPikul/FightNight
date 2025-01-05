@@ -2,7 +2,7 @@
 
 namespace fightnight.Server.Dtos.Account
 {
-    public class LoginDto
+    public class LoginReqDto
     {
         [Required]
         [EmailAddress]

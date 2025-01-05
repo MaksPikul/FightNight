@@ -63,6 +63,11 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("MyRedisConStr");
+    options.InstanceName = "SampleInstance";
+});
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
@@ -150,8 +155,24 @@ builder.Services.AddScoped<IInviteRepo, InviteRepo>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
-builder.Services.AddScoped<IOAuthService, OAuthService>();
 
+builder.Services.AddScoped<IRegisterService>(sp =>
+{
+    var useService = "DB";
+    switch (useService)
+    {
+        case "DB":
+            return sp.GetRequiredService<DbRegisterService>();
+        case "CACHE":
+            return sp.GetRequiredService<CacheRegisterService>();
+        default:
+            // incase string is not set, IT SHOULD BE
+            return sp.GetRequiredService<DbRegisterService>();
+    }
+});
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddTransient<IOAuthProvider, GoogleOAuthProvider>();
 builder.Services.AddTransient<IOAuthProvider, MicrosoftOAuthProvider>();
 builder.Services.AddSingleton<OAuthProviderFactory>();
