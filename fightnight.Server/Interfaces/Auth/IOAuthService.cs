@@ -1,6 +1,6 @@
 ﻿using MetInProximityBack.Types;
 
-namespace MetInProximityBack.Interfaces
+namespace fightnight.Server.Interfaces.Auth
 {
     public interface IOAuthService
     {

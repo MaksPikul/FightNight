@@ -1,9 +1,9 @@
 ﻿using MetInProximityBack.Types;
-using MetInProximityBack.Interfaces;
 using System;
 using Azure.Core;
+using fightnight.Server.Interfaces.Auth;
 
-namespace MetInProximityBack.Services
+namespace fightnight.Server.Services.Auth
 {
     public class OAuthService : IOAuthService
     {
@@ -20,7 +20,7 @@ namespace MetInProximityBack.Services
             _configuration = configuration;
         }
 
-        public async Task<OAuthTokenResponse> GetOAuthTokens(string url, Dictionary<string,string> req)
+        public async Task<OAuthTokenResponse> GetOAuthTokens(string url, Dictionary<string, string> req)
         {
             var content = new FormUrlEncodedContent(req);
             Console.WriteLine("in get oauth tokens");
@@ -32,7 +32,7 @@ namespace MetInProximityBack.Services
                 var errorContent = await response.Content.ReadAsStringAsync();
                 throw new Exception("Failed to fetch OAuth ID_Tokenn: " + errorContent);
             }
-            
+
             var tokens = await response.Content.ReadFromJsonAsync<OAuthTokenResponse>();
 
             return tokens;

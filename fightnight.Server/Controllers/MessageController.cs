@@ -13,6 +13,10 @@ using Microsoft.AspNetCore.Identity;
 using fightnight.Server.Mappers;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.repo;
+using fightnight.Server.Interfaces;
+using fightnight.Server.Services;
+using fightnight.Server.Dtos.Member;
+using fightnight.Server.Factories;
 
 namespace fightnight.Server.Controllers
 {
@@ -20,22 +24,22 @@ namespace fightnight.Server.Controllers
     [ApiController]
     public class MessageController : ControllerBase
     {
-        private readonly IMemberRepo _memberRepo;
-        private readonly IEventRepo _eventRepo;
+        private readonly IMemberService _memberService;
+        private readonly IEventService _eventService;
         private readonly IMessageRepo _messageRepo;
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly UserManager<AppUser> _userManager;
         public MessageController(
-            IEventRepo eventRepo,
+            IEventService eventService,
             UserManager<AppUser> userManager,
-            IMemberRepo memberRepo,
+            IMemberService memberService,
             IHubContext<ChatHub> hubContext,
             IMessageRepo messageRepo) 
         {
             _userManager = userManager;
             _messageRepo = messageRepo;
-            _eventRepo = eventRepo;
-            _memberRepo = memberRepo;
+            _eventService = eventService;
+            _memberService = memberService;
             _hubContext = hubContext;
         }
 
@@ -47,61 +51,49 @@ namespace fightnight.Server.Controllers
             {
                 return BadRequest("Message is empty");
             }
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
 
-            //check if user is associated with event
-            var result = await _memberRepo.CheckIfMemberAsync(appUser.Id, msgBody.eventId);
-            if (result)
-            {
-                var newMsg = new Message
-                {
-                    message = msgBody.msg,
-                    userId = appUser.Id,
-                    username = msgBody.username,
-                    picture = msgBody.picture,
-                    eventId = msgBody.eventId
-                };
-                var x = await _messageRepo.CreateMessageAsync(newMsg);
-                //return Ok(newMsg);
-                Console.WriteLine(x);
+            var appUser = await _userManager.FindByEmailAsync( User.GetEmail() );
 
-                if (newMsg == null) return StatusCode(500, "Could not add AppUserEvent to DB");
-
-                //add message to redis and update
-
-                await _hubContext.Clients
-                    .Group(msgBody.eventId)
-                    .SendAsync("SendMsgRes", newMsg.ReturnMessageMapper());
-                
-                return Ok(newMsg.ReturnMessageMapper());
-            }
-            else
+   
+            MemberResDto existingMember = await _memberService.GetEventMemberProfileByEmailAsync(appUser.Email, msgBody.eventId);
+            if (existingMember == null)
             {
                 return Unauthorized("You are unauthorized to run this action, not a member of the event");
             }
+
+            Message newMsg = MessageFactory.CreateMessage(msgBody, appUser.Id);
+
+            var x = await _messageRepo.CreateMessageAsync(newMsg);
+
+            if (newMsg == null) return StatusCode(500, "Could not add AppUserEvent to DB");
+
+            await _hubContext.Clients
+                .Group(msgBody.eventId)
+                .SendAsync("SendMsgRes", newMsg.ReturnMessageMapper());
+                
+            return Ok(newMsg.ReturnMessageMapper());
+            
         }
+
+
 
         [HttpGet("{eventId}/{offset}/{limit}")]
         [Authorize]
         public async Task<IActionResult> GetEventMessages([FromRoute] string eventId, int offset=0, int limit=50)
         {
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
-            
-            var result = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventId);
-                
-            if (result)
-            {
-                //check redis
-                var messages =  await _messageRepo.GetMessagesAsync(eventId, offset, limit);
-                //if (messages == null) { return BadRequest("No Events to display"); }
-                return Ok(messages);
-            }
-            else
+            var appUser = await _userManager.FindByEmailAsync( User.GetEmail() );
+
+            MemberResDto existingMember = await _memberService.GetEventMemberProfileByEmailAsync(appUser.Email, eventId);
+            if (existingMember == null)
             {
                 return Unauthorized("You are unauthorized to run this action, not a member of the event");
             }
+            
+
+            var messages =  await _messageRepo.GetMessagesAsync(eventId, offset, limit);
+            return Ok(messages);
+            
+            
         }
 
         [HttpPatch]
@@ -126,6 +118,7 @@ namespace fightnight.Server.Controllers
                     .Group(msgBody.eventId)
                     .SendAsync("EditMsgRes", message);
 
+
             return Ok("Message Edited");
         }
 
@@ -134,14 +127,20 @@ namespace fightnight.Server.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteMessage([FromBody] DeleteMessageBody msgBody)
         {
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
+            AppUser appUser = await _userManager.FindByEmailAsync( User.GetEmail() );
 
-            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, msgBody.eventId);
-            if (ueRole == null) return Unauthorized("You are unauthorized to run this action.");
+            bool ueRole = _eventService.IsEventRoleValid(Enums.EventRole.Admin, appUser.Id, msgBody.eventId);
 
-            var message = await _messageRepo.GetMessageAsync(msgBody.msgId);
-            if (message == null) return BadRequest("Message Not Found");
+            if (ueRole)
+            {
+                return Unauthorized("You are unauthorized to run this action.");
+            }
+
+            Message message = await _messageRepo.GetMessageAsync(msgBody.msgId);
+            if (message == null)
+            {
+                return BadRequest("Message Not Found");
+            }
 
             await _hubContext.Clients
                     .Group(msgBody.eventId)

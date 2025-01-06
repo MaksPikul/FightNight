@@ -7,10 +7,8 @@ namespace fightnight.Server.Interfaces.IRepos
 {
     public interface IEventRepo
     {
-        Task<List<Event>> GetAllAsync();
         Task<Event> GetEventONLYAsync(string id);
         Task<EventMembersDTO> GetEventWITHMembersAsync(string id);
-        Task<Event> GetEventWithJoinCodeAsync(string code);
         Task<Event> CreateEventAsync(Event eventModel);
         Task<List<EventResDto>> GetUserEvents(string userId);
         Task<Event> DeleteEventAsync(Event eventVar);

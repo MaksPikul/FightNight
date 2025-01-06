@@ -24,15 +24,15 @@ namespace fightnight.Server.Repos
             throw new NotImplementedException();
         }
 
-        public async Task<Invitation> GetInvitationAsync(string Id)
+        public async Task<Invitation> GetInvitationByIdAsync(string Id)
         {
             return await _context.Invitation.FindAsync(Id);
         }
 
-        public async Task<Boolean> InviteExistsAsync(string Email)
+        public async Task<Invitation> GetInvitationByEmailAsync(string Email)
         {
-            var result = await _context.Invitation.Where(inv => inv.userEmail == Email).FirstOrDefaultAsync();
-            return result != null;
+            Invitation result = await _context.Invitation.Where(inv => inv.userEmail == Email).FirstOrDefaultAsync();
+            return result;
         }
 
         public async Task<Invitation> UpdateInviteAsync(Invitation invite)

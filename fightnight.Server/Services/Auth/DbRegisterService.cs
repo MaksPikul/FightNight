@@ -1,9 +1,10 @@
 ﻿using fightnight.Server.Interfaces;
+using fightnight.Server.Interfaces.Auth;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models.Tables;
 using Microsoft.AspNetCore.Identity;
 
-namespace fightnight.Server.Services
+namespace fightnight.Server.Services.Auth
 {
     // Primary Constructor, Learnt about this c# feature, looks very interesting
     public class DbRegisterService(
@@ -13,15 +14,15 @@ namespace fightnight.Server.Services
         IInviteService inviteService,
         ITokenService tokenService,
         IRegisterService registerService
-    ) 
-        : 
+    )
+        :
     AuthService(userManager, signInManager, emailService, inviteService, tokenService, registerService), IRegisterService
     {
         public async Task<AppUser> AddUnconfirmedUserAsync(AppUser appUser, string password = null)
         {
             // you can pass in nulls for password,
             // I just wanted to show here that u can create with nulls
-            IdentityResult createResult = (password == null) ?
+            IdentityResult createResult = password == null ?
             await _userManager.CreateAsync(appUser)
                 :
                 await _userManager.CreateAsync(appUser, password);

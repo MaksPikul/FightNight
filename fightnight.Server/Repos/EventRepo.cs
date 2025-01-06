@@ -19,11 +19,6 @@ namespace fightnight.Server.repo
             _context = context;
         }
 
-        public async Task<List<Event>> GetAllAsync()
-        {
-            return await _context.Event.ToListAsync();
-        }
-
         public async Task<Event> GetEventONLYAsync(string id)
         {
             return await _context.Event.FindAsync(id);
@@ -31,6 +26,9 @@ namespace fightnight.Server.repo
 
         public async Task<EventMembersDTO> GetEventWITHMembersAsync(string id)
         {
+            /*
+             * Event-Members-{eventId}
+             */
             var eventWithMembers = await _context.Event
                 .Where(e => e.Id == id)
                 .Include(e => e.AppUserEvents) 
@@ -43,10 +41,6 @@ namespace fightnight.Server.repo
             return eventWithMembers;
         }
 
-        public Task<Event> GetEventWithJoinCodeAsync(string code)
-        {
-            return null;
-        }
 
         public async Task<Event> CreateEventAsync(Event EventModel)
         {
@@ -92,13 +86,5 @@ namespace fightnight.Server.repo
         {
             return _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).Select(u => u.Role).FirstOrDefault();
         }
-
-        
-
-        
-
-
-
-        
     }
 } 

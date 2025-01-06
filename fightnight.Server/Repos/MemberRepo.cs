@@ -3,6 +3,7 @@ using fightnight.Server.Dtos.Member;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
 using fightnight.Server.Interfaces.IRepos;
+using fightnight.Server.Mappers;
 using fightnight.Server.Models.Tables;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,37 +23,25 @@ namespace fightnight.Server.Repos
             return userEvent;
         }
 
-        public async Task<List<ReturnMemberDto>> GetEventMembersAsync(string eventId)
+        public async Task<MemberResDto> GetEventMemberProfileAsync(string email, string eventId)
         {
-            return await _context.AppUserEvent.Where(u => u.EventId == eventId )
-                .Select(eventV =>
-                    new ReturnMemberDto
-                    {
-                        Id = eventV.AppUser.Id,
-                        Username = eventV.AppUser.UserName,
-                        Email = eventV.AppUser.Email,
-                        picture = eventV.AppUser.Picture,
-                        Role = eventV.Role,
-                    })
-                .ToListAsync();
-        }
+            MemberResDto member =  await _context.AppUserEvent
+                .Include(e => e.AppUser)
+                .Where(u => u.Event.Id == eventId && u.AppUser.NormalizedEmail == email.ToUpper())
+                .Select(ue => ue.AppUser.MapToMemberResDto()).FirstOrDefaultAsync();
 
-        public async Task<AppUserEvent> GetMemberAsync(string userId, string eventId)
-        {
-            return await _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId ==userId).FirstOrDefaultAsync();
+            return member;
         }
 
         public async Task<AppUserEvent> RemoveMemberFromEventAsync(AppUserEvent aue)
         {
+            // eventId,Member key
+            // Remvove this entry,
+            // WHen fetching again, it will populate new entry
+
             _context.AppUserEvent.Remove(aue);
             await _context.SaveChangesAsync();
             return aue;
-        }
-
-        public async Task<Boolean> CheckIfMemberAsync(string userId, string eventId)
-        {
-            var member = await _context.AppUserEvent.Where(u => u.EventId == eventId && u.AppUserId == userId).FirstOrDefaultAsync();
-            return member != null;
         }
         
     }

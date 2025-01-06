@@ -3,7 +3,7 @@ using fightnight.Server.Models.Tables;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
-namespace fightnight.Server.Interfaces
+namespace fightnight.Server.Interfaces.Auth
 {
     public interface IAuthService
     {

@@ -66,7 +66,7 @@ export const EventChat = ({
 
     useEffect(() => {
         const conn = new HubConnectionBuilder()
-            .withUrl("https://localhost:7161/chathub")
+            .withUrl(`https://localhost:7161/chathub?eventId=${eventId}&userId=${user?.userId}`)
             .withAutomaticReconnect()
             .configureLogging(LogLevel.Information)
             .build();
@@ -115,6 +115,7 @@ export const EventChat = ({
                     })
             });
             connection.start()
+            /*
                 .then(() => {
                     connection.invoke("ConnectionReq",
                         {
@@ -122,6 +123,7 @@ export const EventChat = ({
                             eventId: eventId
                         })
                 })
+                */
             
             }
 

@@ -1,4 +1,4 @@
-﻿using MetInProximityBack.Interfaces;
+﻿using fightnight.Server.Interfaces.Auth;
 
 namespace MetInProximityBack.Factories
 {

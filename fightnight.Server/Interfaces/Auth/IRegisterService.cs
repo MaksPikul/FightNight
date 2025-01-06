@@ -1,7 +1,7 @@
 ﻿using fightnight.Server.Models.Tables;
 using Microsoft.AspNetCore.Identity;
 
-namespace fightnight.Server.Interfaces
+namespace fightnight.Server.Interfaces.Auth
 {
     public interface IRegisterService
     {

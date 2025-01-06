@@ -16,8 +16,8 @@ using fightnight.Server.Repos;
 using fightnight.Server.Models.Tables;
 using fightnight.Server.Providers.OAuthProviders;
 using MetInProximityBack.Factories;
-using MetInProximityBack.Interfaces;
-using MetInProximityBack.Services;
+using fightnight.Server.Services.Auth;
+using fightnight.Server.Interfaces.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -151,6 +151,11 @@ builder.Services.AddScoped<IEventRepo, EventRepo>();
 builder.Services.AddScoped<IMemberRepo, MemberRepo>();
 builder.Services.AddScoped<IMessageRepo, MessageRepo>();
 builder.Services.AddScoped<IInviteRepo, InviteRepo>();
+
+builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IInviteService, InviteService>();
+builder.Services.AddScoped<IMemberService, MemberService>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();

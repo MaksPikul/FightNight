@@ -1,10 +1,10 @@
-﻿using MetInProximityBack.Interfaces;
-using fightnight.Server.Extensions;
+﻿using fightnight.Server.Extensions;
 using MetInProximityBack.Types;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using fightnight.Server.Interfaces.Auth;
 
 namespace fightnight.Server.Providers.OAuthProviders
 {

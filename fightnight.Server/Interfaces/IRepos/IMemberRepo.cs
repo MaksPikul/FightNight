@@ -10,9 +10,7 @@ namespace fightnight.Server.Interfaces.IRepos
 
         Task<AppUserEvent> RemoveMemberFromEventAsync(AppUserEvent aue);
 
-        Task<List<ReturnMemberDto>> GetEventMembersAsync(string eventId);
-        Task<AppUserEvent> GetMemberAsync(string userId, string eventId);
+        Task<MemberResDto> GetEventMemberProfileAsync(string email, string eventId);
 
-        Task<Boolean> CheckIfMemberAsync(string userId, string eventId);
     }
 }

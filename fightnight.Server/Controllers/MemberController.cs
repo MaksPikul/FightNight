@@ -1,15 +1,19 @@
 ﻿using Amazon.S3.Model;
+using fightnight.Server.Abstracts;
 using fightnight.Server.Data;
 using fightnight.Server.Dtos.Account;
 using fightnight.Server.Dtos.Member;
-using fightnight.Server.Dtos.NewFolder;
 using fightnight.Server.Dtos.User;
 using fightnight.Server.Enums;
 using fightnight.Server.Extensions;
+using fightnight.Server.Factories;
+using fightnight.Server.Hubs;
+using fightnight.Server.Interfaces;
 using fightnight.Server.Interfaces.IRepos;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models;
 using fightnight.Server.Models.Tables;
+using fightnight.Server.Providers.EmailProviders;
 using fightnight.Server.Repos;
 using fightnight.Server.Services;
 using FluentEmail.Core;
@@ -19,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks.Dataflow;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace fightnight.Server.Controllers
 {
@@ -26,114 +31,96 @@ namespace fightnight.Server.Controllers
     [ApiController]
     public class MemberController : ControllerBase
     {
-        private readonly IEventRepo _eventRepo;
-        private readonly IMemberRepo _memberRepo;
-        private readonly IInviteRepo _inviteRepo;
+        private readonly IEventService _eventService;
+        private readonly ICacheService _cacheService;
+        private readonly IMemberService _memberService;
+        private readonly IInviteService _inviteService;
         private readonly IEmailService _emailService;
+        private readonly IHubContext<ChatHub> _hubContext;
         private readonly UserManager<AppUser> _userManager;
-        private readonly AppDBContext _context;
         public MemberController(
-        IEventRepo eventRepo,
-        IMemberRepo memberRepo,
-        IInviteRepo inviteRepo,
+        IEventService eventService,
+        ICacheService cacheService,
+        IMemberService memberService,
+        IInviteService inviteService,
         IEmailService emailService,
-        UserManager<AppUser> userManager,
-        AppDBContext context
+        IHubContext<ChatHub> hubContext,
+        UserManager<AppUser> userManager
         ) { 
-            _eventRepo = eventRepo;
-            _memberRepo = memberRepo;
+            _eventService = eventService;
+            _cacheService = cacheService;
+            _memberService = memberService;
             _userManager = userManager;
-            _context = context;
             _emailService = emailService;
-            _inviteRepo = inviteRepo;
-        }
+            _hubContext = hubContext;
+            _inviteService = inviteService; 
+    }
 
-        /*
-        Share Link - uses event joinCode
-        Invite Sent by email - uses inviteId
-
-        Fighters pasting code into search to register interest, if over fighter limit, add to waitlist
-
-        - Logged in at home, sees notification to join, clicks accept invite
-        - Click link and Logged in and it takes you to invite page, once accepted, redirects to event page
-        - Logged out, takes you to register, once registered, redirects to invite page, once accepted, recirects to event page
-         */
-
-        //upon clicking invite links, redirected to a page, this page then redirects them to valid pages based on status
-       
         [HttpPost("invite")]
         [Authorize]
         public async Task<IActionResult> SendInvite([FromBody] InviteMemberReqDto sendInvBody)
         {
-            var sendingUserEmail = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(sendingUserEmail);
+            var appUser = await _userManager.FindByEmailAsync( User.GetEmail() );
 
             // get event i think
-            var ueRole = _eventRepo.GetUserEventRole(appUser.Id, sendInvBody.eventId);
+            
+            bool validRole = _eventService.IsEventRoleValid(EventRole.Admin, appUser.Id, sendInvBody.eventId);
 
-            if (!ueRole.Equals(EventRole.Admin))
+            if (validRole)
             {
                 return Unauthorized("You are unauthorized to complete this action");
             }
 
-            var existingInvite = await _inviteRepo.InviteExistsAsync(sendInvBody.newMemberEmail);
-            if (existingInvite) return BadRequest("Invite Already Sent");
-
-            var user = await _userManager.FindByEmailAsync(sendInvBody.newMemberEmail);
-            if (user != null)
+            Invitation invite = await _inviteService.GetInviteByEmailAsync(sendInvBody.newMemberEmail);
+            if (invite != null)
             {
-                var existingMember = await _memberRepo.CheckIfMemberAsync(user.Id, sendInvBody.eventId);
-                if (existingMember) return BadRequest("User already a member of event");
+                return BadRequest("Invite Already Sent");
             }
 
-            var invite = new Invitation
+            // No need to check if user exists, if it doesnt, then it wont show up here, becasue a userId and EventId must be valid
+            MemberResDto existingMember = await _memberService.GetEventMemberProfileByEmailAsync(sendInvBody.newMemberEmail, sendInvBody.eventId);
+            if (existingMember != null)
             {
-                userEmail = sendInvBody.newMemberEmail,
-                eventId = sendInvBody.eventId,
-                //expiration = DateTime.UtcNow.AddDays(Expiration),
-                proposedRole = sendInvBody.role,
-            };
+                return BadRequest("User already a member of event");
+            }
 
-            await _inviteRepo.AddInviteAsync(invite);
+            invite = InvitationFactory.CreateInvite(sendInvBody);
+            _inviteService.AddInviteToDb(invite);
+
             // if error, return error
             // if invite sent successfully,
-            
-            string emailVerifyLink = "https://localhost:5173/eventInvite?token=" + invite.Id + "&email=" + sendInvBody.newMemberEmail;
 
-            /*
-            var email = new ConfirmEmailTemplate
-            {
-                SendingTo = sendInvBody.newMemberEmail,
-                EmailBody = "<p>Click <a href=" + emailVerifyLink
-                + ">Here</a> to join event.</p>"
-            };
-            await _emailService.Send(email);
-            */
+            Abstracts.Email email = new EventInviteEmail(existingMember.Email, invite.Id);
+            await _emailService.SendEmail(email);
 
-            return Ok(emailVerifyLink);//"If email exists, It will receive this Invite.");
+            // Currently for debugging and testing, 
+            string link = "https://localhost:5173/eventInvite?token=" + invite.Id + "&email=" + email;
+            return Ok(link);
         }
 
 
 
-        // Make one controller which handles invites in general? Using Chain Design Pattern
-
-
-
+        // Make one controller which handles invites in general? Using Chain Design Pattern, GOOD IDEA?
 
 
         // user clicks link in email or clicks Accept in home page, redirect to invite page, user clicks JOIN 
         [HttpPost("join-w-invite")]
         public async Task<IActionResult> JoinWithInvite([FromBody] string inviteId)
         {
-            var invite = await _inviteRepo.GetInvitationAsync(inviteId);
-            if (invite == null) return NotFound("Invitation not found");
-            else if (invite.expiration > DateTime.Now) {
-                await _inviteRepo.DeleteInviteAsync(invite);
+            Invitation invite = await _inviteService.GetInviteByIdAsync(inviteId);
+
+            if (invite == null)
+            {
+                return NotFound("Invitation not found");
+            }
+            else if (invite.expiration > DateTime.Now)
+            {
+                _inviteService.DeleteInviteAsync(invite);
                 return BadRequest("Invitation has expired, Ask for another.");
-             }
+            }
 
             //checks if user exsists
-            var invitedUser = await _userManager.FindByEmailAsync(invite.userEmail);
+            AppUser invitedUser = await _userManager.FindByEmailAsync(invite.userEmail);
             if (invitedUser == null) return Redirect("https://localhost:5173/register?inviteId=" + invite.Id);
             
             //checks if user logged in
@@ -141,20 +128,74 @@ namespace fightnight.Server.Controllers
             if (loggedInUserEmail == null) return Redirect("https://localhost:5173/login?inviteId=" + invite.Id);
 
             //User logged in, so hes redirected to event team page
-            var appUser = await _userManager.FindByEmailAsync(loggedInUserEmail);
-            var AppUserEvent = new AppUserEvent
-            {
-                EventId = invite.eventId,
-                AppUserId = appUser.Id,
-                Role = invite.proposedRole,
-            };
+            _memberService.AddUserToEvent(invite, invitedUser);
 
-            await _inviteRepo.DeleteInviteAsync(invite);
+            _inviteService.DeleteInviteAsync(invite);
 
             return Redirect("https://localhost:5173/event/" + invite.eventId + "/team");
         }
 
-        // user clicks shared link
+        [HttpDelete]
+        [Authorize]
+        public async Task<IActionResult> RemoveMemberFromEvent([FromBody] RemoveMemberReqDto mbrBody)
+        {
+            var email = User.GetEmail();
+            var appUser = await _userManager.FindByEmailAsync(email);
+
+            AppUserEvent member = await _memberService.GetAppUserEvent(mbrBody.userId, mbrBody.eventId);
+            if (member == null) return BadRequest("Member or Event does not exist");
+
+            if (member.AppUserId == appUser.Id)
+            {
+                if (member.Role.Equals(EventRole.Admin))
+                {
+                    return BadRequest("Unable to remove the admin from event");
+                }
+
+                _memberService.RemoveMemberFromEvent(member);
+                return Redirect("https://localhost:5173/home");
+            }
+            _memberService.RemoveMemberFromEvent(member);
+
+            // * notification for them to close event, becasue removed
+            string connectionKey = $"chat/event:{member.EventId}/user:{member.AppUserId}";
+            string connectionId = await _cacheService.GetFromCacheAsync(connectionKey);
+            _cacheService.RemoveFromCacheAsync(connectionKey);
+
+            await _hubContext.Clients.Client(connectionId).SendAsync("CloseConnection", member.EventId);
+
+            return Ok(member.AppUser.UserName + " Has been removed from event");
+        }
+
+
+
+
+
+        // user clicks shared link ,  Will do later, Focus on Invite Join
+
+        /*
+         * 
+        
+        No Need for this, will keep, 
+        Not necessary cause users are fetched with event,
+        Might be necessary when refetching and having cached data? fresh event data, stale members, fetch only memebrs?
+
+         
+        [HttpGet("{eventId}")]
+        [Authorize]
+        public async Task<IActionResult> GetEventMembers([FromRoute] string eventId)
+        {
+            var email = User.GetEmail();
+            var appUser = await _userManager.FindByEmailAsync(email);
+
+            var boolResult = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventId);
+            if (!boolResult) return Unauthorized("Unauthorized, not a member of event.");
+
+            var members = await _memberRepo.GetEventMembersAsync(eventId);
+            return Ok(members);
+        }
+
+
         [HttpPost("join-w-share")]
         public async Task<IActionResult> JoinWithSharedLink([FromBody] string eventJoinCode)
         {
@@ -180,50 +221,7 @@ namespace fightnight.Server.Controllers
 
             return Redirect("https://localhost:5173/event/" + eventVar.Id + "/team");
         }
-
-        [HttpDelete]
-        [Authorize]
-        public async Task<IActionResult> RemoveMemberFromEvent([FromBody] RemoveMemberReqDto mbrBody)
-        {
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
-
-            var member = await _memberRepo.GetMemberAsync(mbrBody.userId, mbrBody.eventId);
-            if (member == null) return BadRequest("Member or Event does not exist");
-
-            if (member.AppUserId == appUser.Id)
-            {
-                if (member.Role.Equals(EventRole.Admin))
-                {
-                    return BadRequest("Unable to remove the admin from event");
-                }
-
-                await _memberRepo.RemoveMemberFromEventAsync(member);
-                return Redirect("https://localhost:5173/home");
-            }
-
-            await _memberRepo.RemoveMemberFromEventAsync(member);
-
-            /*
-            await _hubContext.Clients.Client(connectionId).SendAsync("ForceDisconnectReq");
-            */
-
-            return Ok(member.AppUser.UserName + " Has been removed from event");
-        }
-
-        [HttpGet("{eventId}")]
-        [Authorize]
-        public async Task<IActionResult> GetEventMembers([FromRoute] string eventId)
-        {
-            var email = User.GetEmail();
-            var appUser = await _userManager.FindByEmailAsync(email);
-
-            var boolResult = await _memberRepo.CheckIfMemberAsync(appUser.Id, eventId);
-            if (!boolResult) return Unauthorized("Unauthorized, not a member of event.");
-
-            var members = await _memberRepo.GetEventMembersAsync(eventId);
-            return Ok(members);
-        }
+        */
 
     }
 }

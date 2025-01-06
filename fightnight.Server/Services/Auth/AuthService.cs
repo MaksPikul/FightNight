@@ -5,6 +5,7 @@ using fightnight.Server.Builders;
 using fightnight.Server.Dtos.Account;
 using fightnight.Server.Factories;
 using fightnight.Server.Interfaces;
+using fightnight.Server.Interfaces.Auth;
 using fightnight.Server.Interfaces.IServices;
 using fightnight.Server.Models.Tables;
 using fightnight.Server.Providers.EmailProviders;
@@ -15,9 +16,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-namespace fightnight.Server.Services
+namespace fightnight.Server.Services.Auth
 {
-    public class AuthService : IAuthService 
+    public class AuthService : IAuthService
     {
         protected readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
@@ -25,15 +26,16 @@ namespace fightnight.Server.Services
         private readonly IInviteService _inviteService;
         private readonly ITokenService _tokenService;
         private readonly IRegisterService _registerService;
-        
+
         public AuthService(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             IEmailService emailService,
             IInviteService inviteService,
-            ITokenService tokenService ,
+            ITokenService tokenService,
             IRegisterService registerService
-        ) {
+        )
+        {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
@@ -44,7 +46,7 @@ namespace fightnight.Server.Services
         // Add User to Database not confirmed,
         // Add User to database confirmed
         // log user in - stays the same
-        
+
 
         // Did someone just implement the strategy Pattern? ;P
         public async Task<AppUser> AddUnconfirmedUserAsync(AppUser appUser, string password = null)

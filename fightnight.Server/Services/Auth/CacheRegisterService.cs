@@ -7,8 +7,9 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using fightnight.Server.Interfaces.IServices;
+using fightnight.Server.Interfaces.Auth;
 
-namespace fightnight.Server.Services
+namespace fightnight.Server.Services.Auth
 {
     public class CacheRegisterService(
         UserManager<AppUser> userManager,
@@ -27,10 +28,11 @@ namespace fightnight.Server.Services
 
         public async Task<AppUser> AddUnconfirmedUserAsync(AppUser appUser, string password = null)
         {
-            if (password != null) {
+            if (password != null)
+            {
                 appUser.PasswordHash = _passwordHasher.HashPassword(appUser, password);
             }
-            
+
             string userData = JsonSerializer.Serialize(appUser);
 
             await _cache.SetStringAsync(appUser.Email, userData);
@@ -50,7 +52,7 @@ namespace fightnight.Server.Services
         public async Task<IdentityResult> ConfirmUserAsync(AppUser appUser)
         {
             appUser.EmailConfirmed = true;
-       
+
             //Should contain hashed password, so we dont need to pass password
             IdentityResult result = await _userManager.CreateAsync(appUser);
             IdentityResult roleResult = await _userManager.AddToRoleAsync(appUser, "User");

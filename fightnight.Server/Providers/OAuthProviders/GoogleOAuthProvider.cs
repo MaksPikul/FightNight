@@ -1,11 +1,11 @@
-﻿using MetInProximityBack.Interfaces;
-using MetInProximityBack.Types;
+﻿using MetInProximityBack.Types;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System;
 using Azure.Core;
 using System.Security.Claims;
 using fightnight.Server.Extensions;
+using fightnight.Server.Interfaces.Auth;
 
 namespace fightnight.Server.Providers.OAuthProviders
 {

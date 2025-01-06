@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace MetInProximityBack.Interfaces
+namespace fightnight.Server.Interfaces.Auth
 {
     public interface IOAuthProvider
     {

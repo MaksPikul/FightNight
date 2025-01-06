@@ -24,7 +24,7 @@ namespace fightnight.Server.Services
 
         public async Task<Invitation> UpdateUserAsync(AppUser appUser, string inviteId, HttpResponse response)
         {
-            Invitation invite = await _inviteRepo.GetInvitationAsync(inviteId);
+            Invitation invite = await _inviteRepo.GetInvitationByIdAsync(inviteId);
 
             if (invite == null)
             {
@@ -35,6 +35,26 @@ namespace fightnight.Server.Services
 
             return invite;
         }
+
+        public async Task<Invitation> GetInviteByEmailAsync(string email)
+        {
+            Invitation invite = await _inviteRepo.GetInvitationByEmailAsync(email);
+            return invite; 
+        }
+
+        public async Task<Invitation> GetInviteByIdAsync(string inviteId)
+        {
+            Invitation invite = await _inviteRepo.GetInvitationByIdAsync(inviteId);
+            return invite;
+        }
+
+        public void AddInviteToDb(Invitation invite)
+        {
+
+        }
+
+        
+
 
         public async Task<Invitation> AddUserToEventAsync(Invitation invite)
         {
@@ -57,6 +77,11 @@ namespace fightnight.Server.Services
             }
 
             return invite;
+        }
+
+        public void DeleteInviteAsync(Invitation invite)
+        {
+             _inviteRepo.DeleteInviteAsync(invite);
         }
     }
 }
