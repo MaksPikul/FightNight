@@ -1,6 +1,5 @@
 <h1>Fight Night, Combat Sport Event Manager for Clubs and Societies </h1>
-<h4> Project which aims to teach me backend development with ASP.NET Core in C# </h4>
-<h4> and to work towards solving a problem for combat sport university societies, and hopefully event organising bodies </h4>
+<h4> Project in which I hope to learn about the ASP.Net Core ecosystem for backend development, as well as coding principles and design patterns</h4>
 <br>
 
 <h2> Tech Stack </h2>
@@ -18,5 +17,10 @@
   <li> ASP.NET Core 8.0 </li>
 </ul>
 
+Documentation and code samples coming Up Soon, will talk about <br>
+- design patterns used and SOLID principles followed
+- Account Controller (credential &OAuth login) (theres actually alot of cool stuff in this controller, in my humble opinion)
+- Message Controller and Chat Hub (Caching Connected Users, seperating concerns between contollers and hubs)
+- Use of Entity Core Framework, some cool queries :D
 
-
+I would say backend is finsihed for presentability (apart for documentation and some tests)
