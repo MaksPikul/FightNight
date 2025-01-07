@@ -27,6 +27,10 @@ Documentation and code samples coming Up Soon, will talk about <br>
 OAuthenticate method in AccountController class <br>
 After Client sends a request to OAuth provider (google, microsoft, github, ...), the provider authentication server returns an access code and a string to denote where the request is coming from to handle it appropriately to the redirect URL provided, which is this API gateway (https://{domain}/api/account/oauth/{provider}?code=...)<br>
 
+Design patterns used:<br>
+Strategy, State, adapter, factory method <br>
+Code adheres to SOLID principles, specifically Single responsibilty, Open/Closed and Dependency inversion principles
+
 ```C#
 [HttpPost("oauth/{provider}")]
 public async Task<IActionResult> OAuthenticate(
@@ -49,15 +53,22 @@ public async Task<IActionResult> OAuthenticate(
 
         // Provider resource server returns a json of values, the Id token holding information about the user that we can use to authenticate them to our application
         // the id_token is a JWT which can be simply decoded into a enumerable object of claims
+        // Claims are statements about a user, used by ASP.Net for authentication
         IEnumerable<Claim> claims = _tokenService.DecodeToken(tokens.id_token);
 
+        // Different providers id_tokens hold a differnt set of values, example, google has email key {email:"mail"} and microsoft as {mail : "mail"}
+        // using the Adapter Design pattern, we can unify the many interfaces to a common one that can be used by the server
         OAuthUserDto user = await OAuthProvider.MapResponseToUser(claims);
 
+        // EmailVerification handled by OAuth provider, less work for us to handle forgotten passwords and unverified or bot emails
         if (user.IsEmailVerified != true)
         {
             return BadRequest("Email not verified.");
         }
 
+        // This part simply checks if user has logged in with such credentials before, if not a new account is made,
+        // A user who logs in with google can also log in with same emailed microsoft account, 
+        // If a client would not like this feature,we can change code for accounts to hold a value in database to note what oauth provider was used for this account, and check if they match
         AppUser appUser = await _userManager.FindByEmailAsync(user.UserEmail);
 
         if (appUser == null)
