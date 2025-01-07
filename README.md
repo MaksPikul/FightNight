@@ -28,7 +28,7 @@ OAuthenticate method in AccountController class <br>
 After Client sends a request to OAuth provider (google, microsoft, github, ...), the provider authentication server returns an access code and a string to denote where the request is coming from to handle it appropriately to the redirect URL provided, which is this API gateway (https://{domain}/api/account/oauth/{provider}?code=...)<br>
 
 Design patterns used:<br>
-Strategy, State, adapter, factory method <br>
+Strategy, State, adapter, factory method, Singleton <br>
 Code adheres to SOLID principles, specifically Single responsibilty, Open/Closed and Dependency inversion principles
 
 ```C#
@@ -46,6 +46,7 @@ public async Task<IActionResult> OAuthenticate(
 
         // To add more providers on the back end, All a developer would need to do would be to create another class which implements the IOAuthProvider interface, and fill in the required fields and methods
         // This follows the Open/Closed SOLID principle where a class is open for extension, but closed for modification
+        // The provider factory is also initatilised a singleton, in program.cs file, (app startup file), this means that only one instance of the class is made
         IOAuthProvider OAuthProvider = _providerFactory.GetProvider(provider);
 
         // OAuth service using access code is now able to pass authentication when making requests to provider resource server (resource being user information)
