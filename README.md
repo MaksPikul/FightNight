@@ -89,7 +89,8 @@ public async Task<IActionResult> OAuthenticate(
 }
 ```
 
-As mentioned above, To add an OAuth Provider, you create a class which implements IOAuthProvider interface, no changes required to OAuthService or AccountController
+As mentioned above, To add an OAuth Provider, you create a class which implements IOAuthProvider interface and add dependency into program.cs, no changes required to OAuthService or AccountController <br>
+This design choice allows for code reusability (no need for multiple controller methods to handle multiple providers, if i were to do so, i would be re writting alot of code)
 ```C#
 public interface IOAuthProvider
 {
@@ -152,6 +153,7 @@ public class GoogleOAuthProvider : IOAuthProvider
 
     }
 }
+
 ```
 Microsoft mapper below to show difference and neccessity for a mapper,
 microsoft doesn't have a email_verified or picture field in json response, and has mail as the key for email value
