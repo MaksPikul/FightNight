@@ -17,7 +17,7 @@
   <li> ASP.NET Core 8.0 </li>
 </ul>
 
-Documentation and code samples coming Up Soon, will talk about <br>
+Documentation and code samples coming Up Soon, will talk about <b>NOT FINISHED</b><br> 
 - design patterns used and SOLID principles followed
 - Account Controller (credential &OAuth login) (theres actually alot of cool stuff in this controller, in my humble opinion)
 - Message Controller and Chat Hub (Caching Connected Users, seperating concerns between contollers and hubs)
@@ -28,7 +28,7 @@ OAuthenticate method in AccountController class <br>
 After Client sends a request to OAuth provider (google, microsoft, github, ...), the provider authentication server returns an access code and a string to denote where the request is coming from to handle it appropriately to the redirect URL provided, which is this API gateway (https://{domain}/api/account/oauth/{provider}?code=...)<br>
 
 Design patterns used:<br>
-Strategy, State, adapter, factory method, Singleton <br>
+Strategy, State, adapter, factory method, Singleton, Class used dependency injection (Asp.Net supported and encouraged) <br>
 Code adheres to SOLID principles, specifically Single responsibilty, Open/Closed and Dependency inversion principles
 
 ```C#
@@ -88,3 +88,83 @@ public async Task<IActionResult> OAuthenticate(
     }
 }
 ```
+
+As mentioned above, To add an OAuth Provider, you create a class which implements IOAuthProvider interface, no changes required to OAuthService or AccountController
+```C#
+public interface IOAuthProvider
+{
+    string ProviderName { get; } 
+    string TokenUrl { get; }
+    string UserUrl { get; } 
+    Dictionary<string, string> GetReqValues(string code); // values which go into POST body to acquire tokens from tokenURL
+    Task<OAuthUserDto> MapResponseToUser(IEnumerable<Claim> res);
+}
+```
+
+Below is an example with Google as OAuth Provider, OAuth protocol follows a standard that each provider follows and implements for third parties to obtain resources.
+IOAuth service will use provider class to get URL corresponding to provider resource server and body parameters,
+OAuthenticate method will use the MapResponseToUser method to adapt google response to unified object that can be used by the applciation server
+```C#
+public class GoogleOAuthProvider : IOAuthProvider
+{
+
+    private readonly IConfiguration _configuration;
+    public string ProviderName => "google";
+    public string TokenUrl => "https://oauth2.googleapis.com/token";
+    public string UserUrl => "https://www.googleapis.com/oauthv2/v1/userinfo";
+
+    public GoogleOAuthProvider(
+        IConfiguration configuration
+    )
+    {
+        _configuration = configuration;
+    }
+
+    public Dictionary<string, string> GetReqValues(string code)
+    {
+        var body = new Dictionary<string, string>
+        {
+            { "client_id",  _configuration["Auth:Google:ClientId"] },
+            { "client_secret", _configuration["Auth:Google:ClientSecret"] },
+            { "grant_type", "authorization_code" },
+            { "code", code },
+            { "redirect_uri", _configuration["Auth:Google:RedirectUri"] }
+        };
+
+        return body;
+    }
+
+    public async Task<OAuthUserDto> MapResponseToUser(IEnumerable<Claim> res)
+    {
+        var userEmail = res.GetClaimValue("email");
+        var userName = res.GetClaimValue("name");
+        var userVerified = res.GetClaimValue("email_verified");
+
+        return new OAuthUserDto
+        {
+            UserName = userName,
+            UserEmail = userEmail,
+            IsEmailVerified = userVerified == "true" ? true : false,
+        };
+
+    }
+}
+```
+Microsoft mapper below to show difference and neccessity for a mapper,
+microsoft doesn't have a email_verified field, and has mail as the key for email value
+```C#
+ public async Task<OAuthUserDto> MapResponseToUser(IEnumerable<Claim> res)
+ {
+     var userEmail = res.GetClaimValue("mail");
+     var userName = res.GetClaimValue("name");
+
+     return new OAuthUserDto
+     {
+         UserName = userName,
+         UserEmail = userEmail,
+         IsEmailVerified = userEmail == null ? false : true,
+     };
+
+ }
+```
+
