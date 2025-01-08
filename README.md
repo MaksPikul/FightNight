@@ -138,12 +138,15 @@ public class GoogleOAuthProvider : IOAuthProvider
     {
         var userEmail = res.GetClaimValue("email");
         var userName = res.GetClaimValue("name");
+        var userPicture = res.GetClaimValue("picture");
         var userVerified = res.GetClaimValue("email_verified");
 
         return new OAuthUserDto
         {
+
             UserName = userName,
             UserEmail = userEmail,
+            Picture = userPicture,
             IsEmailVerified = userVerified == "true" ? true : false,
         };
 
@@ -151,7 +154,7 @@ public class GoogleOAuthProvider : IOAuthProvider
 }
 ```
 Microsoft mapper below to show difference and neccessity for a mapper,
-microsoft doesn't have a email_verified field, and has mail as the key for email value
+microsoft doesn't have a email_verified or picture field in json response, and has mail as the key for email value
 ```C#
  public async Task<OAuthUserDto> MapResponseToUser(IEnumerable<Claim> res)
  {
